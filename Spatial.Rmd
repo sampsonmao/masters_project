@@ -1,0 +1,224 @@
+---
+title: "Spatial"
+output: html_notebook
+---
+
+# Correlated joint Poisson distribution
+
+A copula is a distribution function on the n-dimensional unit cuve with uniformly distributed margins. (Kazianka-Pilz2010)
+
+Suppose we have 4 stations denoted by
+
+$$
+S = 
+\begin{pmatrix}
+s_1 \\ s_2 \\ s_3 \\ s_4
+\end{pmatrix}
+$$
+
+and
+
+$$
+Z(s) \sim GP(0,R_{4\times 4})
+$$
+
+Let $\Phi$ be the CDF of N(0,1) RV, Then
+
+$$
+(U_1, U_2, U_3, U_4) = \left(\Phi(Z(s_1)),\Phi(Z(s_2)),\Phi(Z(s_3)),\Phi(Z(s_4))\right)
+$$
+Denote F as the CDF of a Poisson($\lambda$) distribution. Set
+
+$$
+X(s) = F^{-1}[\Phi(Z(s))]
+$$
+where
+$$
+F^{-1}(U) = \inf \{x:F(x) \geq U\}
+$$
+
+$$
+(X(s_1),X(s_2),X(s_3),X(s_4)) \overset{D}{\sim} \text{Poisson}(\lambda)
+$$
+with correlation
+
+
+Goal: To generate Poisson random fields, and plot the results
+
+$$
+\begin{aligned}
+\{Z(s) = Z(s_1),Z(s_2),...,Z(s_N)\} && N \text{ locations } 1,...,N 
+\end{aligned}
+$$
+$Z$ must be a standard normal
+
+If we have a MVN RV 
+
+$$Y \sim N_N(\mu,\Sigma)$$
+
+we can write it as
+
+$$
+Y = \mu + \Sigma^{1/2}W
+$$
+
+where
+
+$$
+W = N_N(0,I_{N\times N})
+$$
+
+## 1D
+
+```{r libraries, messages="FALSE"}
+library(plgp) # distance
+library(mvtnorm)
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+```
+
+
+```{r covariance functions}
+# squared distances as input
+squared.exponential = function(r, l) {
+  eps = sqrt(.Machine$double.eps)
+  if (is.null(dim(r))==FALSE) {
+    n = dim(r)[1]
+    exp(-r/(2*l)) + diag(eps, n)
+  } else {
+    exp(-r/(2*l))
+  }
+}
+
+matern = function(r, nu, theta) {
+  result = (2^(1-nu))/gamma(nu) * (r*sqrt(2*nu/theta))^nu * besselK(r*sqrt(2*nu/theta), nu)
+  result[is.nan(result)] = 1
+  return(result)
+}
+```
+
+```{r myMVN function}
+myMVN = function(n, mu, Sigma) {
+  if (length(mu) != dim(Sigma)[1]) stop("Mean and covariance matrix have non-conforming size")
+  d = dim(Sigma)[1]
+  samples = matrix(rnorm(d*n, 0, 1), nrow=d, ncol=n)
+  chol.Sigma = t(chol(Sigma)) # chol returns upper triangular
+  t(mu + chol.Sigma %*% samples)
+}
+```
+
+```{r data}
+# 200 points from -10 to 10 (1D)
+n = 200
+S = matrix(seq(-10,10,length=n), ncol=1)
+D = distance(S) # returns squared distances
+sigma.exp1D = squared.exponential(D,1)
+sigma.mat1D = matern(sqrt(D), 2, 1)
+```
+
+```{r differences}
+# Builtin
+plot(S,rmvnorm(1, rep(0,200), sigma.exp1D), type="l", ylim=c(-10,10),
+     main="rmvnorm (from library)")
+for (i in 1:20) {
+  builtin.samples = rmvnorm(1, rep(0,200), sigma.exp1D)
+  lines(S, builtin.samples, col="gray")
+}
+
+# From scratch
+plot(S,myMVN(1, rep(0,200), sigma.exp1D), type="l", ylim=c(-10,10),
+     main="myMVN (from scratch)")
+for (i in 1:20) {
+  mySamples = myMVN(1, rep(0,200), sigma.exp1D)
+  lines(S, mySamples, col="gray")
+}
+
+```
+
+MVN from scratch looks to perform similarly to the one from the library. However, the one from the library can handle covariance matrices better
+
+
+```{r}
+n = 200
+S = matrix(seq(-10,10,length=n), ncol=1)
+D = distance(S) # returns squared distances
+sigma.exp1D = squared.exponential(D,1)
+sigma.mat1D = matern(sqrt(D), 2, 1) # nu = 2, theta=1
+
+normsamples.exp1D = myMVN(1, rep(0,n), sigma.exp1D)
+normsamples.mat1D = myMVN(1, rep(0,n), sigma.mat1D)
+
+plot(S, normsamples.exp1D, type="l",
+     main="Exponential Covariance matrix")
+plot(S, normsamples.mat1D, type="l",
+     main="Matern Covariance matrix")
+
+transformed.exp1D = qpois(pnorm(myMVN(1, rep(0,n), sigma.exp1D)), 10)
+transformed.mat1D = qpois(pnorm(myMVN(1, rep(0,n), sigma.mat1D)), 10)
+plot(S, transformed.exp1D,
+     main="Exponential Covariance matrix")
+plot(S, transformed.mat1D,
+     main="Matern Covariance matrix")
+```
+
+
+## 2D
+
+```{r Exponential covariance 2D}
+n = 30
+S = seq(-10,10,length=n)
+SS = expand.grid(S,S) # All combinations of x,y coords
+dist.SS = distance(SS)
+sigma.2D = squared.exponential(dist.SS,1)
+
+samples.2D = myMVN(1, rep(0,n^2), sigma.2D)
+transformed.2D = t(qpois(pnorm(samples.2D),10))
+
+df.2D = data.frame(cbind(SS, transformed.2D))
+names(df.2D) = c("X", "Y", "Counts")
+
+heat.2D = ggplot() +
+  geom_tile(data=df.2D, aes(x=X, y=Y, fill=Counts)) +
+  labs(title="Exponential") +
+  scale_fill_viridis(option="magma") +
+  theme_minimal()
+heat.2D
+
+# persp(S,S, qpois(pnorm(matrix(samples.2D, ncol=50)),1), theta=30, phi=30)
+```
+
+```{r Matern covariance 2D}
+n = 30
+S = seq(-10,10,length=n)
+SS = expand.grid(S,S) # All combinations of x,y coords
+dist.SS = distance(SS)
+sigma.matern = matern(sqrt(dist.SS), 2, 1)
+samples.matern = myMVN(1, rep(0,n^2), sigma.matern)
+transformed.matern = t(qpois(pnorm(samples.matern),10))
+df.matern = data.frame(cbind(SS, transformed.matern))
+names(df.matern) = c("X", "Y", "Counts")
+
+heat.matern = ggplot() +
+  geom_tile(data=df.matern, aes(x=X, y=Y, fill=Counts)) +
+  labs(title="Matern") +
+  scale_fill_viridis(option="magma") +
+  theme_minimal()
+heat.matern
+```
+
+```{r}
+par(pty="s")
+empirical = sort(transformed.matern)
+theoretical = qpois((1:900)/901,10)
+plot(theoretical, empirical, xlim=c(0,20), ylim=c(0,20))
+lines(stepfun(1:900,0:900), col="red", do.points=F)
+abline(c(0,1))
+```
+
+
+```{r}
+library(fitdistrplus)
+plot(fitdist(as.vector(transformed.matern),"pois"))
+```
+
