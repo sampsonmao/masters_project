@@ -1,0 +1,27 @@
+---
+title: "Spatial 2"
+output: html_notebook
+---
+
+Conditional autoregression
+
+Markov random field
+
+$$
+f(x_1),...,f(x_n) \overset{ind}{\sim} GP 
+$$
+
+1. Different type of fields we can generate
+* negative correlation
+* Jagged Gaussian
+* Smooth Gaussian
+* Other distributions
+** Binomial start here
+** Generalized Poisson
+** Negative Binomial r=# of casts until r fish
+2. Kansas tornado counts
+3. Try many matern parameters
+4. Different matern
+
+particle filters
+likelihood inference
