@@ -1817,9 +1817,154 @@ f(x_1),...,f(x_n) \overset{ind}{\sim} GP
 <li>Different matern</li>
 </ol>
 <p>particle filters likelihood inference</p>
+<p><span class="math display">\[
+\rho(s,s^\prime) = \frac{C(s,s^\prime)}{\sqrt{C(s,s)C(s^\prime,s^\prime)}}
+\]</span></p>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShwbGdwKSAjIGRpc3RhbmNlXG5saWJyYXJ5KG12dG5vcm0pXG5saWJyYXJ5KGdncGxvdDIpXG5saWJyYXJ5KHZpcmlkaXMpXG5saWJyYXJ5KGhyYnJ0aGVtZXMpXG5saWJyYXJ5KE1hdHJpeClcbmBgYCJ9 -->
+<pre class="r"><code>library(plgp) # distance
+library(mvtnorm)
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+library(Matrix)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><span class="math display">\[
+k_\nu(r)=\sigma^2\frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{r}{\theta}\right)^{\nu} K_\nu \left(\frac{r}{\theta}\right)
+\]</span></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWF0ZXJuID0gZnVuY3Rpb24ociwgbnUsIHRoZXRhLCBzaWcyPTEpIHtcbiAgcmVzdWx0ID0gc2lnMiooMl4oMS1udSkpL2dhbW1hKG51KSAqIChyL3RoZXRhKV5udSAqIGJlc3NlbEsoci90aGV0YSwgbnUpXG4gIHJlc3VsdFtpcy5uYW4ocmVzdWx0KV0gPSBzaWcyXG4gIHJldHVybihyZXN1bHQpXG59XG5gYGAifQ== -->
+<pre class="r"><code>matern = function(r, nu, theta, sig2=1) {
+  result = sig2*(2^(1-nu))/gamma(nu) * (r/theta)^nu * besselK(r/theta, nu)
+  result[is.nan(result)] = sig2
+  return(result)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubiA9IDQwICMgZm9yIDEwMDAgeCAxMDAwIGRhdGEgcmVxdWlyZXMgNzUwMCBHQiBtZW1vcnlcblMgPSBzZXEoLTEwLDEwLGxlbmd0aD1uKVxuU1MgPSBleHBhbmQuZ3JpZChTLFMpICMgQWxsIGNvbWJpbmF0aW9ucyBvZiB4LHkgY29vcmRzXG5kaXN0LlNTID0gZGlzdGFuY2UoU1MpXG5gYGAifQ== -->
+<pre class="r"><code>n = 40 # for 1000 x 1000 data requires 7500 GB memory
+S = seq(-10,10,length=n)
+SS = expand.grid(S,S) # All combinations of x,y coords
+dist.SS = distance(SS)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZm9yIChudSBpbiBjKDEvMiwgMiwgNSkpIHtcbiAgc2lnID0gbWF0ZXJuKHNxcnQoZGlzdC5TUyksIG51LCAxKVxuICBzYW1wbGVzID0gcm12bm9ybSgxLCByZXAoMCxuXjIpLCBzaWcpXG4gIHRyYW5zZm9ybWVkID0gdChxcG9pcyhwbm9ybShzYW1wbGVzKSwgMTApKVxuICBkZiA9IGRhdGEuZnJhbWUoY2JpbmQoU1MsIHRyYW5zZm9ybWVkKSlcbiAgbmFtZXMoZGYpID0gYyhcIlhcIiwgXCJZXCIsIFwiQ291bnRzXCIpXG4gIFxuICBoZWF0Lm1hcCA9IGdncGxvdCgpICtcbiAgICBnZW9tX3RpbGUoZGF0YT1kZiwgYWVzKHg9WCwgeT1ZLCBmaWxsPUNvdW50cykpICtcbiAgICBsYWJzKHRpdGxlPXBhc3RlKFwiUG9pc3NvblwiLCBcImxhbWJkYT0xMFwiKSxcbiAgICAgICAgIHN1YnRpdGxlPXBhc3RlKFwiNDB4NDAgTWF0ZXJuXCIgLFwibnU9XCIsIG51LCBcInRoZXRhPTFcIikpICtcbiAgICBzY2FsZV9maWxsX3ZpcmlkaXMob3B0aW9uPVwibWFnbWFcIiwgbGltaXRzPWMoMCwyNSkpICtcbiAgICB0aGVtZV9taW5pbWFsKClcbiAgcHJpbnQoaGVhdC5tYXApXG59XG5cbmBgYCJ9 -->
+<pre class="r"><code>for (nu in c(1/2, 2, 5)) {
+  sig = matern(sqrt(dist.SS), nu, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = t(qpois(pnorm(samples), 10))
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c(&quot;X&quot;, &quot;Y&quot;, &quot;Counts&quot;)
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste(&quot;Poisson&quot;, &quot;lambda=10&quot;),
+         subtitle=paste(&quot;40x40 Matern&quot; ,&quot;nu=&quot;, nu, &quot;theta=1&quot;)) +
+    scale_fill_viridis(option=&quot;magma&quot;, limits=c(0,25)) +
+    theme_minimal()
+  print(heat.map)
+}
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZm9yICh0aGV0YSBpbiBjKDIsIDMsIDYpKSB7XG4gIHNpZyA9IG1hdGVybihzcXJ0KGRpc3QuU1MpLCAyLCB0aGV0YSwgMSlcbiAgc2FtcGxlcyA9IHJtdm5vcm0oMSwgcmVwKDAsbl4yKSwgc2lnKVxuICB0cmFuc2Zvcm1lZCA9IHQocXBvaXMocG5vcm0oc2FtcGxlcyksMTApKVxuICBkZiA9IGRhdGEuZnJhbWUoY2JpbmQoU1MsIHRyYW5zZm9ybWVkKSlcbiAgbmFtZXMoZGYpID0gYyhcIlhcIiwgXCJZXCIsIFwiQ291bnRzXCIpXG4gIFxuICBoZWF0Lm1hcCA9IGdncGxvdCgpICtcbiAgICBnZW9tX3RpbGUoZGF0YT1kZiwgYWVzKHg9WCwgeT1ZLCBmaWxsPUNvdW50cykpICtcbiAgICBsYWJzKHRpdGxlPXBhc3RlKFwiUG9pc3NvblwiLCBcImxhbWJkYT0xMFwiKSxcbiAgICAgICAgIHN1YnRpdGxlPXBhc3RlKFwiNDB4NDAgTWF0ZXJuXCIsIFwibnU9MlwiLCBcInRoZXRhPVwiLCB0aGV0YSkpICtcbiAgICBzY2FsZV9maWxsX3ZpcmlkaXMob3B0aW9uPVwibWFnbWFcIiwgbGltaXRzPWMoMCwyNSkpICtcbiAgICB0aGVtZV9taW5pbWFsKClcbiAgcHJpbnQoaGVhdC5tYXApXG59XG5cbmBgYCJ9 -->
+<pre class="r"><code>for (theta in c(2, 3, 6)) {
+  sig = matern(sqrt(dist.SS), 2, theta, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = t(qpois(pnorm(samples),10))
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c(&quot;X&quot;, &quot;Y&quot;, &quot;Counts&quot;)
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste(&quot;Poisson&quot;, &quot;lambda=10&quot;),
+         subtitle=paste(&quot;40x40 Matern&quot;, &quot;nu=2&quot;, &quot;theta=&quot;, theta)) +
+    scale_fill_viridis(option=&quot;magma&quot;, limits=c(0,25)) +
+    theme_minimal()
+  print(heat.map)
+}
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<div id="generalized-poisson-distribution" class="section level1">
+<h1>Generalized Poisson distribution</h1>
+<p>On accurate and precise generation of generalized Poisson variates <a href="https://www-tandfonline-com.oca.ucsc.edu/doi/full/10.1080/03610918.2014.968725" class="uri">https://www-tandfonline-com.oca.ucsc.edu/doi/full/10.1080/03610918.2014.968725</a> <span class="math display">\[
+P_x(\theta,\lambda)=\frac{e^{-\theta-\lambda x}}{x!} \theta(\theta+\lambda x)^{x-1}
+\]</span></p>
+<p><span class="math display">\[
+P[X_t=k] = \frac{e^{-(\lambda+\eta k)}}{k!} \lambda(\lambda+\eta k)^{k-1}
+\]</span></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShSTkdmb3JHUEQpXG5gYGAifQ== -->
+<pre class="r"><code>library(RNGforGPD)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZXRhID0gMS8yXG5sYW1iZGEgPSAxMFxuXG5mb3IgKG51IGluIGMoMS8yLCAyLCA1KSkge1xuICBzaWcgPSBtYXRlcm4oc3FydChkaXN0LlNTKSwgbnUsIDEsIDEpXG4gIHNhbXBsZXMgPSBybXZub3JtKDEsIHJlcCgwLG5eMiksIHNpZylcbiAgdHJhbnNmb3JtZWQgPSBRdWFudGlsZUdwb2lzKHBub3JtKHNhbXBsZXMpLCBsYW1iZGEsIGV0YSlcbiAgZGYgPSBkYXRhLmZyYW1lKGNiaW5kKFNTLCB0cmFuc2Zvcm1lZCkpXG4gIG5hbWVzKGRmKSA9IGMoXCJYXCIsIFwiWVwiLCBcIkNvdW50c1wiKVxuICBcbiAgaGVhdC5tYXAgPSBnZ3Bsb3QoKSArXG4gICAgZ2VvbV90aWxlKGRhdGE9ZGYsIGFlcyh4PVgsIHk9WSwgZmlsbD1Db3VudHMpKSArXG4gICAgbGFicyh0aXRsZT1wYXN0ZShcIkdlbmVyYWxpemVkIFBvaXNzb25cIiwgXCJsYW1iZGE9XCIsbGFtYmRhLCBcImV0YT1cIixldGEpLFxuICAgICAgICAgc3VidGl0bGU9cGFzdGUoXCI0MHg0MCBNYXRlcm5cIiAsXCJudT1cIiwgbnUsIFwidGhldGE9MVwiKSkgK1xuICAgIHNjYWxlX2ZpbGxfdmlyaWRpcyhvcHRpb249XCJtYWdtYVwiLCBsaW1pdHM9YygwLDY1KSkgK1xuICAgIHRoZW1lX21pbmltYWwoKVxuICBwcmludChoZWF0Lm1hcClcbn1cbmBgYCJ9 -->
+<pre class="r"><code>eta = 1/2
+lambda = 10
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiU3BhdGlhbCAyIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgpDb25kaXRpb25hbCBhdXRvcmVncmVzc2lvbgoKTWFya292IHJhbmRvbSBmaWVsZAoKJCQKZih4XzEpLC4uLixmKHhfbikgXG92ZXJzZXR7aW5kfXtcc2ltfSBHUCAKJCQKCjEuIERpZmZlcmVudCB0eXBlIG9mIGZpZWxkcyB3ZSBjYW4gZ2VuZXJhdGUKKiBuZWdhdGl2ZSBjb3JyZWxhdGlvbgoqIEphZ2dlZCBHYXVzc2lhbgoqIFNtb290aCBHYXVzc2lhbgoqIE90aGVyIGRpc3RyaWJ1dGlvbnMKKiogQmlub21pYWwgc3RhcnQgaGVyZQoqKiBHZW5lcmFsaXplZCBQb2lzc29uCioqIE5lZ2F0aXZlIEJpbm9taWFsIHI9IyBvZiBjYXN0cyB1bnRpbCByIGZpc2gKMi4gS2Fuc2FzIHRvcm5hZG8gY291bnRzCjMuIFRyeSBtYW55IG1hdGVybiBwYXJhbWV0ZXJzCjQuIERpZmZlcmVudCBtYXRlcm4KCnBhcnRpY2xlIGZpbHRlcnMKbGlrZWxpaG9vZCBpbmZlcmVuY2U=</div>
+for (nu in c(1/2, 2, 5)) {
+  sig = matern(sqrt(dist.SS), nu, 1, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = QuantileGpois(pnorm(samples), lambda, eta)
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c(&quot;X&quot;, &quot;Y&quot;, &quot;Counts&quot;)
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste(&quot;Generalized Poisson&quot;, &quot;lambda=&quot;,lambda, &quot;eta=&quot;,eta),
+         subtitle=paste(&quot;40x40 Matern&quot; ,&quot;nu=&quot;, nu, &quot;theta=1&quot;)) +
+    scale_fill_viridis(option=&quot;magma&quot;, limits=c(0,65)) +
+    theme_minimal()
+  print(heat.map)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucCA9IDEvMlxuTiA9IDMwXG5cbmZvciAobnUgaW4gYygxLzIsIDIsIDUpKSB7XG4gIHNpZyA9IG1hdGVybihzcXJ0KGRpc3QuU1MpLCBudSwgMSwgMSlcbiAgc2FtcGxlcyA9IHJtdm5vcm0oMSwgcmVwKDAsbl4yKSwgc2lnKVxuICB0cmFuc2Zvcm1lZCA9IHQocW5iaW5vbShwbm9ybShzYW1wbGVzKSwgTiwgcCkpXG4gIGRmID0gZGF0YS5mcmFtZShjYmluZChTUywgdHJhbnNmb3JtZWQpKVxuICBuYW1lcyhkZikgPSBjKFwiWFwiLCBcIllcIiwgXCJDb3VudHNcIilcbiAgXG4gIGhlYXQubWFwID0gZ2dwbG90KCkgK1xuICAgIGdlb21fdGlsZShkYXRhPWRmLCBhZXMoeD1YLCB5PVksIGZpbGw9Q291bnRzKSkgK1xuICAgIGxhYnModGl0bGU9cGFzdGUoXCJOZWdhdGl2ZSBCaW5vbWlhbFwiLCBcIk49XCIsIE4sIFwicD1cIiwgcCksXG4gICAgICAgICBzdWJ0aXRsZT1cIjQweDQwIE1hdGVyblwiLCBcIm51PVwiLCBudSwgXCJ0aGV0YT0xXCIpICtcbiAgICBzY2FsZV9maWxsX3ZpcmlkaXMob3B0aW9uPVwibWFnbWFcIiwgbGltaXRzPWMoMCw2NSkpICtcbiAgICB0aGVtZV9taW5pbWFsKClcbiAgcHJpbnQoaGVhdC5tYXApXG59XG5gYGAifQ== -->
+<pre class="r"><code>p = 1/2
+N = 30
+
+for (nu in c(1/2, 2, 5)) {
+  sig = matern(sqrt(dist.SS), nu, 1, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = t(qnbinom(pnorm(samples), N, p))
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c(&quot;X&quot;, &quot;Y&quot;, &quot;Counts&quot;)
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste(&quot;Negative Binomial&quot;, &quot;N=&quot;, N, &quot;p=&quot;, p),
+         subtitle=&quot;40x40 Matern&quot;, &quot;nu=&quot;, nu, &quot;theta=1&quot;) +
+    scale_fill_viridis(option=&quot;magma&quot;, limits=c(0,65)) +
+    theme_minimal()
+  print(heat.map)
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlNwYXRpYWwgMiINCm91dHB1dDogaHRtbF9ub3RlYm9vaw0KLS0tDQoNCkNvbmRpdGlvbmFsIGF1dG9yZWdyZXNzaW9uDQoNCk1hcmtvdiByYW5kb20gZmllbGQNCg0KJCQNCmYoeF8xKSwuLi4sZih4X24pIFxvdmVyc2V0e2luZH17XHNpbX0gR1AgDQokJA0KDQoxLiBEaWZmZXJlbnQgdHlwZSBvZiBmaWVsZHMgd2UgY2FuIGdlbmVyYXRlDQoqIG5lZ2F0aXZlIGNvcnJlbGF0aW9uDQoqIEphZ2dlZCBHYXVzc2lhbg0KKiBTbW9vdGggR2F1c3NpYW4NCiogT3RoZXIgZGlzdHJpYnV0aW9ucw0KKiogQmlub21pYWwgc3RhcnQgaGVyZQ0KKiogR2VuZXJhbGl6ZWQgUG9pc3Nvbg0KKiogTmVnYXRpdmUgQmlub21pYWwgcj0jIG9mIGNhc3RzIHVudGlsIHIgZmlzaA0KMi4gS2Fuc2FzIHRvcm5hZG8gY291bnRzDQozLiBUcnkgbWFueSBtYXRlcm4gcGFyYW1ldGVycw0KNC4gRGlmZmVyZW50IG1hdGVybg0KDQpwYXJ0aWNsZSBmaWx0ZXJzDQpsaWtlbGlob29kIGluZmVyZW5jZQ0KDQokJA0KXHJobyhzLHNeXHByaW1lKSA9IFxmcmFje0MocyxzXlxwcmltZSl9e1xzcXJ0e0MocyxzKUMoc15ccHJpbWUsc15ccHJpbWUpfX0NCiQkDQoNCmBgYHtyIGxpYnJhcmllcywgbWVzc2FnZXM9IkZBTFNFIn0NCmxpYnJhcnkocGxncCkgIyBkaXN0YW5jZQ0KbGlicmFyeShtdnRub3JtKQ0KbGlicmFyeShnZ3Bsb3QyKQ0KbGlicmFyeSh2aXJpZGlzKQ0KbGlicmFyeShocmJydGhlbWVzKQ0KbGlicmFyeShNYXRyaXgpDQpgYGANCg0KDQokJA0Ka19cbnUocik9XHNpZ21hXjJcZnJhY3syXnsxLVxudX19e1xHYW1tYShcbnUpfSBcbGVmdChcZnJhY3tyfXtcdGhldGF9XHJpZ2h0KV57XG51fSBLX1xudSBcbGVmdChcZnJhY3tyfXtcdGhldGF9XHJpZ2h0KQ0KJCQNCg0KDQpgYGB7ciBtYXRlcm4gY292YXJpYW5jZSBmdW5jdGlvbn0NCm1hdGVybiA9IGZ1bmN0aW9uKHIsIG51LCB0aGV0YSwgc2lnMj0xKSB7DQogIHJlc3VsdCA9IHNpZzIqKDJeKDEtbnUpKS9nYW1tYShudSkgKiAoci90aGV0YSlebnUgKiBiZXNzZWxLKHIvdGhldGEsIG51KQ0KICByZXN1bHRbaXMubmFuKHJlc3VsdCldID0gc2lnMg0KICByZXR1cm4ocmVzdWx0KQ0KfQ0KYGBgDQoNCg0KYGBge3IgTWF0ZXJuIGNvdmFyaWFuY2UgMkR9DQpuID0gNDAgIyBmb3IgMTAwMCB4IDEwMDAgZGF0YSByZXF1aXJlcyA3NTAwIEdCIG1lbW9yeQ0KUyA9IHNlcSgtMTAsMTAsbGVuZ3RoPW4pDQpTUyA9IGV4cGFuZC5ncmlkKFMsUykgIyBBbGwgY29tYmluYXRpb25zIG9mIHgseSBjb29yZHMNCmRpc3QuU1MgPSBkaXN0YW5jZShTUykNCmBgYA0KDQoNCmBgYHtyIHBsb3RfbnV9DQpmb3IgKG51IGluIGMoMS8yLCAyLCA1KSkgew0KICBzaWcgPSBtYXRlcm4oc3FydChkaXN0LlNTKSwgbnUsIDEpDQogIHNhbXBsZXMgPSBybXZub3JtKDEsIHJlcCgwLG5eMiksIHNpZykNCiAgdHJhbnNmb3JtZWQgPSB0KHFwb2lzKHBub3JtKHNhbXBsZXMpLCAxMCkpDQogIGRmID0gZGF0YS5mcmFtZShjYmluZChTUywgdHJhbnNmb3JtZWQpKQ0KICBuYW1lcyhkZikgPSBjKCJYIiwgIlkiLCAiQ291bnRzIikNCiAgDQogIGhlYXQubWFwID0gZ2dwbG90KCkgKw0KICAgIGdlb21fdGlsZShkYXRhPWRmLCBhZXMoeD1YLCB5PVksIGZpbGw9Q291bnRzKSkgKw0KICAgIGxhYnModGl0bGU9cGFzdGUoIlBvaXNzb24iLCAibGFtYmRhPTEwIiksDQogICAgICAgICBzdWJ0aXRsZT1wYXN0ZSgiNDB4NDAgTWF0ZXJuIiAsIm51PSIsIG51LCAidGhldGE9MSIpKSArDQogICAgc2NhbGVfZmlsbF92aXJpZGlzKG9wdGlvbj0ibWFnbWEiLCBsaW1pdHM9YygwLDI1KSkgKw0KICAgIHRoZW1lX21pbmltYWwoKQ0KICBwcmludChoZWF0Lm1hcCkNCn0NCg0KYGBgDQoNCg0KYGBge3IgcGxvdF90aGV0YX0NCmZvciAodGhldGEgaW4gYygyLCAzLCA2KSkgew0KICBzaWcgPSBtYXRlcm4oc3FydChkaXN0LlNTKSwgMiwgdGhldGEsIDEpDQogIHNhbXBsZXMgPSBybXZub3JtKDEsIHJlcCgwLG5eMiksIHNpZykNCiAgdHJhbnNmb3JtZWQgPSB0KHFwb2lzKHBub3JtKHNhbXBsZXMpLDEwKSkNCiAgZGYgPSBkYXRhLmZyYW1lKGNiaW5kKFNTLCB0cmFuc2Zvcm1lZCkpDQogIG5hbWVzKGRmKSA9IGMoIlgiLCAiWSIsICJDb3VudHMiKQ0KICANCiAgaGVhdC5tYXAgPSBnZ3Bsb3QoKSArDQogICAgZ2VvbV90aWxlKGRhdGE9ZGYsIGFlcyh4PVgsIHk9WSwgZmlsbD1Db3VudHMpKSArDQogICAgbGFicyh0aXRsZT1wYXN0ZSgiUG9pc3NvbiIsICJsYW1iZGE9MTAiKSwNCiAgICAgICAgIHN1YnRpdGxlPXBhc3RlKCI0MHg0MCBNYXRlcm4iLCAibnU9MiIsICJ0aGV0YT0iLCB0aGV0YSkpICsNCiAgICBzY2FsZV9maWxsX3ZpcmlkaXMob3B0aW9uPSJtYWdtYSIsIGxpbWl0cz1jKDAsMjUpKSArDQogICAgdGhlbWVfbWluaW1hbCgpDQogIHByaW50KGhlYXQubWFwKQ0KfQ0KDQpgYGANCg0KIyBHZW5lcmFsaXplZCBQb2lzc29uIGRpc3RyaWJ1dGlvbg0KDQpPbiBhY2N1cmF0ZSBhbmQgcHJlY2lzZSBnZW5lcmF0aW9uIG9mIGdlbmVyYWxpemVkIFBvaXNzb24gdmFyaWF0ZXMNCmh0dHBzOi8vd3d3LXRhbmRmb25saW5lLWNvbS5vY2EudWNzYy5lZHUvZG9pL2Z1bGwvMTAuMTA4MC8wMzYxMDkxOC4yMDE0Ljk2ODcyNQ0KJCQNClBfeChcdGhldGEsXGxhbWJkYSk9XGZyYWN7ZV57LVx0aGV0YS1cbGFtYmRhIHh9fXt4IX0gXHRoZXRhKFx0aGV0YStcbGFtYmRhIHgpXnt4LTF9DQokJA0KDQokJA0KUFtYX3Q9a10gPSBcZnJhY3tlXnstKFxsYW1iZGErXGV0YSBrKX19e2shfSBcbGFtYmRhKFxsYW1iZGErXGV0YSBrKV57ay0xfQ0KJCQNCg0KYGBge3J9DQpsaWJyYXJ5KFJOR2ZvckdQRCkNCmBgYA0KDQpgYGB7ciBwbG90X2dwb2lzfQ0KZXRhID0gMS8yDQpsYW1iZGEgPSAxMA0KDQpmb3IgKG51IGluIGMoMS8yLCAyLCA1KSkgew0KICBzaWcgPSBtYXRlcm4oc3FydChkaXN0LlNTKSwgbnUsIDEsIDEpDQogIHNhbXBsZXMgPSBybXZub3JtKDEsIHJlcCgwLG5eMiksIHNpZykNCiAgdHJhbnNmb3JtZWQgPSBRdWFudGlsZUdwb2lzKHBub3JtKHNhbXBsZXMpLCBsYW1iZGEsIGV0YSkNCiAgZGYgPSBkYXRhLmZyYW1lKGNiaW5kKFNTLCB0cmFuc2Zvcm1lZCkpDQogIG5hbWVzKGRmKSA9IGMoIlgiLCAiWSIsICJDb3VudHMiKQ0KICANCiAgaGVhdC5tYXAgPSBnZ3Bsb3QoKSArDQogICAgZ2VvbV90aWxlKGRhdGE9ZGYsIGFlcyh4PVgsIHk9WSwgZmlsbD1Db3VudHMpKSArDQogICAgbGFicyh0aXRsZT1wYXN0ZSgiR2VuZXJhbGl6ZWQgUG9pc3NvbiIsICJsYW1iZGE9IixsYW1iZGEsICJldGE9IixldGEpLA0KICAgICAgICAgc3VidGl0bGU9cGFzdGUoIjQweDQwIE1hdGVybiIgLCJudT0iLCBudSwgInRoZXRhPTEiKSkgKw0KICAgIHNjYWxlX2ZpbGxfdmlyaWRpcyhvcHRpb249Im1hZ21hIiwgbGltaXRzPWMoMCw2NSkpICsNCiAgICB0aGVtZV9taW5pbWFsKCkNCiAgcHJpbnQoaGVhdC5tYXApDQp9DQpgYGANCg0KYGBge3IgcGxvdF9uYmlub219DQpwID0gMS8yDQpOID0gMzANCg0KZm9yIChudSBpbiBjKDEvMiwgMiwgNSkpIHsNCiAgc2lnID0gbWF0ZXJuKHNxcnQoZGlzdC5TUyksIG51LCAxLCAxKQ0KICBzYW1wbGVzID0gcm12bm9ybSgxLCByZXAoMCxuXjIpLCBzaWcpDQogIHRyYW5zZm9ybWVkID0gdChxbmJpbm9tKHBub3JtKHNhbXBsZXMpLCBOLCBwKSkNCiAgZGYgPSBkYXRhLmZyYW1lKGNiaW5kKFNTLCB0cmFuc2Zvcm1lZCkpDQogIG5hbWVzKGRmKSA9IGMoIlgiLCAiWSIsICJDb3VudHMiKQ0KICANCiAgaGVhdC5tYXAgPSBnZ3Bsb3QoKSArDQogICAgZ2VvbV90aWxlKGRhdGE9ZGYsIGFlcyh4PVgsIHk9WSwgZmlsbD1Db3VudHMpKSArDQogICAgbGFicyh0aXRsZT1wYXN0ZSgiTmVnYXRpdmUgQmlub21pYWwiLCAiTj0iLCBOLCAicD0iLCBwKSwNCiAgICAgICAgIHN1YnRpdGxlPSI0MHg0MCBNYXRlcm4iLCAibnU9IiwgbnUsICJ0aGV0YT0xIikgKw0KICAgIHNjYWxlX2ZpbGxfdmlyaWRpcyhvcHRpb249Im1hZ21hIiwgbGltaXRzPWMoMCw2NSkpICsNCiAgICB0aGVtZV9taW5pbWFsKCkNCiAgcHJpbnQoaGVhdC5tYXApDQp9DQpgYGA=</div>
 
 
 

@@ -25,3 +25,136 @@ $$
 
 particle filters
 likelihood inference
+
+$$
+\rho(s,s^\prime) = \frac{C(s,s^\prime)}{\sqrt{C(s,s)C(s^\prime,s^\prime)}}
+$$
+
+```{r libraries, messages="FALSE"}
+library(plgp) # distance
+library(mvtnorm)
+library(ggplot2)
+library(viridis)
+library(hrbrthemes)
+library(Matrix)
+```
+
+
+$$
+k_\nu(r)=\sigma^2\frac{2^{1-\nu}}{\Gamma(\nu)} \left(\frac{r}{\theta}\right)^{\nu} K_\nu \left(\frac{r}{\theta}\right)
+$$
+
+
+```{r matern covariance function}
+matern = function(r, nu, theta, sig2=1) {
+  result = sig2*(2^(1-nu))/gamma(nu) * (r/theta)^nu * besselK(r/theta, nu)
+  result[is.nan(result)] = sig2
+  return(result)
+}
+```
+
+
+```{r Matern covariance 2D}
+n = 40 # for 1000 x 1000 data requires 7500 GB memory
+S = seq(-10,10,length=n)
+SS = expand.grid(S,S) # All combinations of x,y coords
+dist.SS = distance(SS)
+```
+
+
+```{r plot_nu}
+for (nu in c(1/2, 2, 5)) {
+  sig = matern(sqrt(dist.SS), nu, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = t(qpois(pnorm(samples), 10))
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c("X", "Y", "Counts")
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste("Poisson", "lambda=10"),
+         subtitle=paste("40x40 Matern" ,"nu=", nu, "theta=1")) +
+    scale_fill_viridis(option="magma", limits=c(0,25)) +
+    theme_minimal()
+  print(heat.map)
+}
+
+```
+
+
+```{r plot_theta}
+for (theta in c(2, 3, 6)) {
+  sig = matern(sqrt(dist.SS), 2, theta, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = t(qpois(pnorm(samples),10))
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c("X", "Y", "Counts")
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste("Poisson", "lambda=10"),
+         subtitle=paste("40x40 Matern", "nu=2", "theta=", theta)) +
+    scale_fill_viridis(option="magma", limits=c(0,25)) +
+    theme_minimal()
+  print(heat.map)
+}
+
+```
+
+# Generalized Poisson distribution
+
+On accurate and precise generation of generalized Poisson variates
+https://www-tandfonline-com.oca.ucsc.edu/doi/full/10.1080/03610918.2014.968725
+$$
+P_x(\theta,\lambda)=\frac{e^{-\theta-\lambda x}}{x!} \theta(\theta+\lambda x)^{x-1}
+$$
+
+$$
+P[X_t=k] = \frac{e^{-(\lambda+\eta k)}}{k!} \lambda(\lambda+\eta k)^{k-1}
+$$
+
+```{r}
+library(RNGforGPD)
+```
+
+```{r plot_gpois}
+eta = 1/2
+lambda = 10
+
+for (nu in c(1/2, 2, 5)) {
+  sig = matern(sqrt(dist.SS), nu, 1, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = QuantileGpois(pnorm(samples), lambda, eta)
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c("X", "Y", "Counts")
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste("Generalized Poisson", "lambda=",lambda, "eta=",eta),
+         subtitle=paste("40x40 Matern" ,"nu=", nu, "theta=1")) +
+    scale_fill_viridis(option="magma", limits=c(0,65)) +
+    theme_minimal()
+  print(heat.map)
+}
+```
+
+```{r plot_nbinom}
+p = 1/2
+N = 30
+
+for (nu in c(1/2, 2, 5)) {
+  sig = matern(sqrt(dist.SS), nu, 1, 1)
+  samples = rmvnorm(1, rep(0,n^2), sig)
+  transformed = t(qnbinom(pnorm(samples), N, p))
+  df = data.frame(cbind(SS, transformed))
+  names(df) = c("X", "Y", "Counts")
+  
+  heat.map = ggplot() +
+    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    labs(title=paste("Negative Binomial", "N=", N, "p=", p),
+         subtitle="40x40 Matern", "nu=", nu, "theta=1") +
+    scale_fill_viridis(option="magma", limits=c(0,65)) +
+    theme_minimal()
+  print(heat.map)
+}
+```
