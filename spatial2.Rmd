@@ -63,37 +63,52 @@ dist.SS = distance(SS)
 
 
 ```{r plot_nu}
-for (nu in c(1/2, 2, 5)) {
+poisson_means = c()
+poisson_vars = c()
+for (nu in c(1/2, 3/4, 1, 2)) {
+  nu = 1/2
   sig = matern(sqrt(dist.SS), nu, 1)
   samples = rmvnorm(1, rep(0,n^2), sig)
   transformed = t(qpois(pnorm(samples), 10))
   df = data.frame(cbind(SS, transformed))
-  names(df) = c("X", "Y", "Counts")
+  s.mean = mean(transformed)
+  s.var = var(transformed)
+  poisson_means = c(gpoisson_means, s.mean)
+  poisson_vars = c(gpoisson_vars, s.var)
+  names(df) = c("s1", "s2", "Counts")
   
   heat.map = ggplot() +
-    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
-    labs(title=paste("Poisson", "lambda=10"),
-         subtitle=paste("40x40 Matern" ,"nu=", nu, "theta=1")) +
+    geom_tile(data=df, aes(x=s1, y=s2, fill=Counts)) +
+    labs(title=bquote("Poisson" ~ lambda*"="*10 ~ "mean="*.(s.mean) ~ "var="*.(s.var)),
+         subtitle=bquote("40x40 Matern" ~ nu*"="*.(nu)*"," ~ theta*"="*1)) +
     scale_fill_viridis(option="magma", limits=c(0,25)) +
     theme_minimal()
   print(heat.map)
 }
 
+#ggsave("poisson-half.pdf")
+  
+  
 ```
 
 
 ```{r plot_theta}
-for (theta in c(2, 3, 6)) {
-  sig = matern(sqrt(dist.SS), 2, theta, 1)
+nu = 1/2
+poisson_meanst = c()
+poisson_varst = c()
+for (theta in c(1, 2, 3, 4)) {
+  sig = matern(sqrt(dist.SS), nu, theta, 1)
   samples = rmvnorm(1, rep(0,n^2), sig)
   transformed = t(qpois(pnorm(samples),10))
   df = data.frame(cbind(SS, transformed))
-  names(df) = c("X", "Y", "Counts")
+  poisson_meanst = c(poisson_meanst, mean(transformed))
+  poisson_varst = c(poisson_varst, var(transformed))
+  names(df) = c("s1", "s2", "Counts")
   
   heat.map = ggplot() +
-    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    geom_tile(data=df, aes(x=s1, y=s2, fill=Counts)) +
     labs(title=paste("Poisson", "lambda=10"),
-         subtitle=paste("40x40 Matern", "nu=2", "theta=", theta)) +
+         subtitle=paste("40x40 Matern", "nu=", nu, "theta=", theta)) +
     scale_fill_viridis(option="magma", limits=c(0,25)) +
     theme_minimal()
   print(heat.map)
@@ -120,39 +135,47 @@ library(RNGforGPD)
 ```{r plot_gpois}
 eta = 1/2
 lambda = 10
-
-for (nu in c(1/2, 2, 5)) {
+nu = 1/2
+gpoisson_means = c()
+gpoisson_vars = c()
+for (nu in c(1/2, 3/4, 1, 2)) {
   sig = matern(sqrt(dist.SS), nu, 1, 1)
   samples = rmvnorm(1, rep(0,n^2), sig)
   transformed = QuantileGpois(pnorm(samples), lambda, eta)
   df = data.frame(cbind(SS, transformed))
-  names(df) = c("X", "Y", "Counts")
+  names(df) = c("s1", "s2", "Counts")
+  s.mean = mean(transformed)
+  s.var = var(transformed)
+  gpoisson_means = c(gpoisson_means, s.mean)
+  gpoisson_vars = c(gpoisson_vars, s.var)
   
   heat.map = ggplot() +
-    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
-    labs(title=paste("Generalized Poisson", "lambda=",lambda, "eta=",eta),
-         subtitle=paste("40x40 Matern" ,"nu=", nu, "theta=1")) +
+    geom_tile(data=df, aes(x=s1, y=s2, fill=Counts)) +
+    labs(title = bquote("Generalized Poisson" ~ lambda*"="*.(lambda)* ~ eta*"="*.(eta) ~ "mean="*.(s.mean) ~ "var="*.(s.var)),
+         subtitle=bquote("40x40 Matern" ~ nu*"="*.(nu)*", " ~ theta*"=1")) +
     scale_fill_viridis(option="magma", limits=c(0,65)) +
     theme_minimal()
   print(heat.map)
 }
+
+#ggsave("genpoisson-half.pdf")
 ```
 
 ```{r plot_nbinom}
 p = 1/2
 N = 30
 
-for (nu in c(1/2, 2, 5)) {
+for (nu in c(1/4, 1/2, 1, 2)) {
   sig = matern(sqrt(dist.SS), nu, 1, 1)
   samples = rmvnorm(1, rep(0,n^2), sig)
   transformed = t(qnbinom(pnorm(samples), N, p))
   df = data.frame(cbind(SS, transformed))
-  names(df) = c("X", "Y", "Counts")
+  names(df) = c("s1", "s2", "Counts")
   
   heat.map = ggplot() +
-    geom_tile(data=df, aes(x=X, y=Y, fill=Counts)) +
+    geom_tile(data=df, aes(x=s1, y=s2, fill=Counts)) +
     labs(title=paste("Negative Binomial", "N=", N, "p=", p),
-         subtitle="40x40 Matern", "nu=", nu, "theta=1") +
+         subtitle=paste("40x40 Matern", "nu=", nu, "theta=1")) +
     scale_fill_viridis(option="magma", limits=c(0,65)) +
     theme_minimal()
   print(heat.map)

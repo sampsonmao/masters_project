@@ -5,7 +5,7 @@ output: html_notebook
 
 # Correlated joint Poisson distribution
 
-A copula is a distribution function on the n-dimensional unit cuve with uniformly distributed margins. (Kazianka-Pilz2010)
+A copula is a distribution function on the n-dimensional unit curve with uniformly distributed margins. (Kazianka-Pilz 2010)
 
 Suppose we have 4 stations denoted by
 
@@ -145,21 +145,21 @@ MVN from scratch looks to perform similarly to the one from the library. However
 n = 200
 S = matrix(seq(-10,10,length=n), ncol=1)
 D = distance(S) # returns squared distances
-sigma.exp1D = squared.exponential(D,1)
-sigma.mat1D = matern(sqrt(D), 2, 1) # nu = 2, theta=1
+#sigma.exp1D = squared.exponential(D,1)
+sigma.mat1D = matern(sqrt(D), 1/2, 1) # nu = 2, theta=1
 
-normsamples.exp1D = myMVN(1, rep(0,n), sigma.exp1D)
-normsamples.mat1D = myMVN(1, rep(0,n), sigma.mat1D)
+#normsamples.exp1D = myMVN(1, rep(0,n), sigma.exp1D)
+normsamples.mat1D = rmvnorm(1, rep(0,n), sigma.mat1D)
 
-plot(S, normsamples.exp1D, type="l",
-     main="Exponential Covariance matrix")
+#plot(S, normsamples.exp1D, type="l",
+#     main="Exponential Covariance matrix")
 plot(S, normsamples.mat1D, type="l",
      main="Matern Covariance matrix")
 
-transformed.exp1D = qpois(pnorm(myMVN(1, rep(0,n), sigma.exp1D)), 10)
-transformed.mat1D = qpois(pnorm(myMVN(1, rep(0,n), sigma.mat1D)), 10)
-plot(S, transformed.exp1D,
-     main="Exponential Covariance matrix")
+#transformed.exp1D = qpois(pnorm(myMVN(1, rep(0,n), sigma.exp1D)), 10)
+transformed.mat1D = qpois(pnorm(rmvnorm(1, rep(0,n), sigma.mat1D)), 10)
+#plot(S, transformed.exp1D,
+#     main="Exponential Covariance matrix")
 plot(S, transformed.mat1D,
      main="Matern Covariance matrix")
 ```
@@ -195,8 +195,8 @@ n = 30
 S = seq(-10,10,length=n)
 SS = expand.grid(S,S) # All combinations of x,y coords
 dist.SS = distance(SS)
-sigma.matern = matern(sqrt(dist.SS), 2, 1)
-samples.matern = myMVN(1, rep(0,n^2), sigma.matern)
+sigma.matern = matern(sqrt(dist.SS), 1/2, 1)
+samples.matern = rmvnorm(1, rep(0,n^2), sigma.matern)
 transformed.matern = t(qpois(pnorm(samples.matern),10))
 df.matern = data.frame(cbind(SS, transformed.matern))
 names(df.matern) = c("X", "Y", "Counts")
@@ -221,6 +221,6 @@ abline(c(0,1))
 
 ```{r}
 library(fitdistrplus)
-plot(fitdist(as.vector(transformed.matern),"pois"))
+plot(fitdist(as.vector(rowSums(transformed.matern)),"pois"))
 ```
 

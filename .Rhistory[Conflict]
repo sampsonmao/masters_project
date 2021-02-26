@@ -1,0 +1,512 @@
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3)
+} else if (tau >= 1/phi) {
+sigma2
+} else {
+0
+}
+}
+spherical_var(0.025)
+curve(spherical_var(x))
+?ifelse
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse (tau >= phi, sigma2, 0)
+)
+}
+curve(spherical_var(x))
+curve(spherical_var(x), c(-1,1))
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse (tau >= 1/phi, sigma2, 0)
+)
+}
+curve(spherical_var(x), c(-1,1))
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse (tau >= 1/phi, sigma2, 0)
+)
+}
+curve(spherical_var(x), c(0,10))
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse (tau >= 1/phi, sigma2, 0)
+)
+}
+curve(spherical_var(x), c(0,10))
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse (tau >= 1/phi, sigma2, 0)
+)
+}
+curve(spherical_var(x))
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse (tau >= phi, sigma2, 0)
+)
+}
+curve(spherical_var(x))
+curve(abs(x))
+curve(abs(x),c(-1,1))
+curve(abs(x)^2,c(-1,1))
+pwr_exp_var = function(tau, nu, sigma2=1,phi=0.05) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+pwr_exp_var = function(tau, nu, sigma2=1,phi=0.05) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+pwr_exp_var = function(tau, nu, sigma2=1,phi=0.05) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+curve(pwr_exp_var(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_var(x,2), add=TRUE, col="red")
+pwr_exp_var = function(tau, nu, sigma2=1,phi=0.05) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+curve(pwr_exp_var(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_var(x,2), add=TRUE, col="red")
+legend("bottomright", col=c("black", "blue", "red"))
+?legend
+pwr_exp_var = function(tau, nu, sigma2=1,phi=0.05) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+curve(pwr_exp_var(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_var(x,2), add=TRUE, col="red")
+legend("bottomright", legend=c(1,1.5,2),col=c("black", "blue", "red"))
+pwr_exp_var = function(tau, nu, sigma2=1,phi=0.05) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+curve(pwr_exp_var(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_var(x,2), add=TRUE, col="red")
+legend("bottomright", legend=c(1,1.5,2),
+col=c("black", "blue", "red"),
+lty=1)
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x))
+rtnl_quad_var = function(tau, sigma2=1, phi=0.05) {
+sigma2*tau^2/(sigma2+tau^2)
+}
+curve(rtnl_quad_var(x))
+pwr_exp_var = function(tau, nu, sigma2=1,phi=0.05) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+curve(pwr_exp_var(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_var(x,2), add=TRUE, col="red")
+legend("bottomright", legend=c(1,1.5,2),
+col=c("black", "blue", "red"),
+lty=1)
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x))
+?curve
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x), from=0)
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x), from=0, to=1)
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x), from=0, to=0.5)
+spherical_var = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x))
+matern_var = function(tau, nu, sigma2=1, phi=0.05) {
+sigma2*(1-(tau/phi)^nu/(2^(nu-1)*gamma(nu))*besselK(tau/phi))
+}
+curve(matern_var(x,1))
+matern_var(1,1)
+matern_var = function(tau, nu, sigma2=1, phi=0.05) {
+sigma2*(1-(tau/phi)^nu/(2^(nu-1)*gamma(nu))*besselK(tau/phi,nu))
+}
+curve(matern_var(x,1))
+matern_var = function(tau, nu, sigma2=1, phi=0.05) {
+sigma2*(1-(tau/phi)^nu/(2^(nu-1)*gamma(nu))*besselK(tau/phi,nu))
+}
+curve(matern_var(x,1/2))
+spherical_cov = function(tau, sigma2=1, phi=0.05) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x))
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x))
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x), xlab=expression("\tau"))
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x), xlab=expression("tau"))
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x), xlab=expression(\tau))
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x), xlab=expression(tau))
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Spherical")
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Spherical", las=3)
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Spherical", las=2)
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Spherical", las=1)
+par(las=3)
+curve(spherical_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Spherical")
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+par(las=3)
+curve(spherical_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Spherical")
+spherical_var = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x))
+spherical_var = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Covariogram - Spherical")
+spherical_var = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse(tau >=1/phi, sigma2, 0)
+)
+}
+curve(spherical_var(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Covariogram - Spherical")
+spherical_cov = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(1-3/2*tau/phi - 1/2*(tau/phi)^3),
+0
+)
+}
+curve(spherical_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Covariogram - Spherical")
+spherical_var = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+ifelse(tau >=1/phi, sigma2, 0)
+)
+}
+curve(spherical_var(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Variogram - Spherical")
+pwr_exp_var = function(tau, nu, sigma2=1,phi=exp(-1/nu*log(-log(0.05)))) {
+sigma2*(1-exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_var(x,1))
+curve(pwr_exp_var(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_var(x,2), add=TRUE, col="red")
+legend("bottomright", legend=c(1,1.5,2),
+col=c("black", "blue", "red"),
+lty=1)
+pwr_exp_cov = function(tau, nu, sigma2=1,phi=exp(-1/nu*log(-log(0.05)))) {
+sigma2*(exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_cov(x,1),
+main="Covariogram - Powered Exponential"))
+pwr_exp_cov = function(tau, nu, sigma2=1,phi=exp(-1/nu*log(-log(0.05)))) {
+sigma2*(exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_cov(x,1),
+main="Covariogram - Powered Exponential")
+curve(pwr_exp_cov(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_cov(x,2), add=TRUE, col="red")
+legend("bottomright", legend=c(1,1.5,2),
+col=c("black", "blue", "red"),
+lty=1)
+pwr_exp_cov = function(tau, nu, sigma2=1,phi=exp(-1/nu*log(-log(0.05)))) {
+sigma2*(exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_cov(x,1),
+xlab=expression(tau),
+ylab=expression(C(tau),
+main="Covariogram - Powered Exponential"))
+curve(pwr_exp_cov(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_cov(x,2), add=TRUE, col="red")
+legend("bottomright", legend=c(1,1.5,2),
+col=c("black", "blue", "red"),
+lty=1)
+spherical_var = function(tau, sigma2=1, phi=1.75) {
+ifelse(tau > 0 & tau <= phi,
+sigma2*(3/2*tau/phi - 1/2*(tau/phi)^3),
+sigma2
+)
+}
+curve(spherical_var(x),
+xlab=expression(tau),
+ylab=expression(C(tau)),
+main="Variogram - Spherical")
+1-0.95
+1/0.95
+rtnl_quad_var = function(tau, sigma2=1, phi=sqrt(1/19)) {
+sigma2*tau^2/(sigma2+tau^2)
+}
+curve(rtnl_quad_var(x))
+rtnl_quad_var = function(tau, sigma2=1, phi=-sqrt(1/19)) {
+sigma2*tau^2/(sigma2+tau^2)
+}
+curve(rtnl_quad_var(x))
+rtnl_quad_var = function(tau, sigma2=1, phi=sqrt(1/19)) {
+sigma2*tau^2/(sigma2+tau^2)
+}
+curve(rtnl_quad_var(x))
+rtnl_quad_var = function(tau, sigma2=1, phi=sqrt(1/19)) {
+sigma2*tau^2/(sigma2+tau^2)
+}
+curve(rtnl_quad_var(x),
+xlab=expression(tau),
+ylab=expression(C(tau),
+main="Variogram - Powered Exponential"))
+rtnl_quad_cov = function(tau, sigma2=1, phi=sqrt(1/19)) {
+sigma2*(1-tau^2/(sigma2+tau^2))
+}
+curve(rtnl_quad_cov(x),
+xlab=expression(tau),
+ylab=expression(C(tau),
+main="Covariogram - Powered Exponential"))
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x))
+wave_var = function(tau, sigma2=1, phi=0.1510) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x))
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343))
+curve(wave_var(x, phi=-0.3343))
+curve(wave_var(x, phi=0.3343))
+curve(wave_var(x, phi=0.3343))
+curve(wave_var(x, phi=0.3343))
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343), ylim=c(0,2))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343), ylim=c(0,1.2))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343), ylim=c(0,1.2), xlim=c(0,2))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343), ylim=c(0,1.2), xlim=c(0,10))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343), ylim=c(0,1.2), xlim=c(0,5))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343), ylim=c(0,1.2), xlim=c(0,3))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+pwr_exp_cov = function(tau, nu, sigma2=1,phi=exp(-1/nu*log(-log(0.05)))) {
+sigma2*(exp(-abs(tau/phi)^nu))
+}
+curve(pwr_exp_cov(x,1),
+xlab=expression(tau),
+ylab=expression(C(tau),
+main="Covariogram - Powered Exponential"))
+curve(pwr_exp_cov(x,1.5), add=TRUE, col="blue")
+curve(pwr_exp_cov(x,2), add=TRUE, col="red")
+legend("topright", legend=c(1,1.5,2),
+col=c("black", "blue", "red"),
+lty=1)
+wave_var = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(1-sin(tau/phi)/(tau/phi))
+}
+curve(wave_var(x, phi=0.3343), ylim=c(0,1.2), xlim=c(0,3))
+curve(wave_var(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_var(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_var(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_var(x, phi=0.0673), add=TRUE, col="purple")
+legend("bottomright", legend=c(0.3343, 0.1510, 0.1116, 0.752, 0.0673),
+col=c("black", "blue", "red", "green", "purple"),
+lty=1)
+wave_cov = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(sin(tau/phi)/(tau/phi))
+}
+curve(wave_cov(x, phi=0.3343), ylim=c(0,1.2), xlim=c(0,3),
+xlab=expression(tau),
+ylab=expression(C(tau),
+main="Variogram - Wave"))
+curve(wave_cov(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_cov(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_cov(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_cov(x, phi=0.0673), add=TRUE, col="purple")
+legend("bottomright", legend=c(0.3343, 0.1510, 0.1116, 0.752, 0.0673),
+col=c("black", "blue", "red", "green", "purple"),
+lty=1)
+wave_cov = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(sin(tau/phi)/(tau/phi))
+}
+curve(wave_cov(x, phi=0.3343), ylim=c(-0.3,), xlim=c(0,3),
+xlab=expression(tau),
+ylab=expression(C(tau),
+main="Variogram - Wave"))
+wave_cov = function(tau, sigma2=1, phi=0.3343) {
+sigma2*(sin(tau/phi)/(tau/phi))
+}
+curve(wave_cov(x, phi=0.3343), ylim=c(-0.3,1), xlim=c(0,3),
+xlab=expression(tau),
+ylab=expression(C(tau),
+main="Variogram - Wave"))
+curve(wave_cov(x, phi=0.1510), add=TRUE, col="blue")
+curve(wave_cov(x, phi=0.1116), add=TRUE, col="red")
+curve(wave_cov(x, phi=0.0752), add=TRUE, col="green")
+curve(wave_cov(x, phi=0.0673), add=TRUE, col="purple")
+legend("topright", legend=c(0.3343, 0.1510, 0.1116, 0.752, 0.0673),
+col=c("black", "blue", "red", "green", "purple"),
+lty=1)

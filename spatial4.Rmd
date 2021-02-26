@@ -1,0 +1,1120 @@
+---
+title: "Simulation of count random fields"
+output: html_notebook
+---
+
+Figures for report
+
+```{r, message=F}
+library(RandomFields)
+# The scale in the RandomFields package refers to the range
+
+library(ggplot2)
+library(RNGforGPD) # gen poisson
+library(viridis)
+library(hrbrthemes)
+```
+
+
+# 1-D case
+
+The `RMwhittle` model in the `RandomFields` package has the desired parameterization of the Matern covariance function. A is the anisotropy matrix, $\sigma^2$ is the variance, and $\phi$ is the range (scale)
+
+$$
+\begin{aligned}
+C(h) &= \sigma^2 \rho\left(A\frac{h}{\phi}\right) \\
+C_{whittle}(r;A,\sigma^2,\phi) &= \sigma^2\frac{2^{1-\nu}}{\Gamma(\nu)} \left(A\frac{r}{\phi}\right)^{\nu} K_{\nu} \left(A\frac{r}{\phi}\right)
+\end{aligned}
+$$
+
+```{r 1D_samples}
+# 1000 locations between 0 and 100
+RFoptions(seed=20)
+nu=1/2
+s = seq(0,100,length=1000)
+
+OneDmodel0.5 = RMwhittle(nu=0.5, var = 1, scale=1)
+OneDmodel1.0 = RMwhittle(nu=1, var = 1, scale=1)
+OneDmodel1.5 = RMwhittle(nu=1.5, var = 1, scale=1)
+OneDmodel2.5 = RMwhittle(nu=2.5, var = 1, scale=1)
+
+simu0.5 = RFsimulate(OneDmodel0.5, x=s, n=1)
+simu1.0 = RFsimulate(OneDmodel1.0, x=s, n=1)
+simu1.5 = RFsimulate(OneDmodel1.5, x=s, n=1)
+simu2.5 = RFsimulate(OneDmodel2.5, x=s, n=1)
+
+realization0.5 = data.frame(s=s, Zs=simu0.5@data$variable1)
+realization1.0 = data.frame(s=s, Zs=simu1.0@data$variable1)
+realization1.5 = data.frame(s=s, Zs=simu1.5@data$variable1)
+realization2.5 = data.frame(s=s, Zs=simu2.5@data$variable1)
+```
+
+```{r}
+OneDGauss0.5 = ggplot() +
+  geom_line(data=realization0.5, aes(x=s, y=Zs)) +
+  labs(title="One realization of a Gaussian Process",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(realization0.5$Zs),2)) ~ "Sample variance="*.(round(var(realization0.5$Zs),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDGauss1.0 = ggplot() +
+  geom_line(data=realization1.0, aes(x=s, y=Zs)) +
+  labs(title="One realization of a Gaussian Process",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.0$Zs),2)) ~ "Sample variance="*.(round(var(realization1.0$Zs),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDGauss1.5 = ggplot() +
+  geom_line(data=realization1.5, aes(x=s, y=Zs)) +
+  labs(title="One realization of a Gaussian Process",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.5$Zs),2)) ~ "Sample variance="*.(round(var(realization1.5$Zs),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDGauss2.5 = ggplot() +
+  geom_line(data=realization2.5, aes(x=s, y=Zs)) +
+  labs(title="One realization of a Gaussian Process",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization2.5$Zs),2)) ~ "Sample variance="*.(round(var(realization2.5$Zs),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+
+OneDGauss0.5
+OneDGauss1.0
+OneDGauss1.5
+OneDGauss2.5
+
+ggsave("figures/1D/Gaussian/1DGP0-5.pdf", OneDGauss0.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Gaussian/1DGP1-0.pdf", OneDGauss1.0, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Gaussian/1DGP1-5.pdf", OneDGauss1.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Gaussian/1DGP2-5.pdf", OneDGauss2.5, dpi=600, width=4, height=4 )
+```
+
+```{r}
+realization0.5$Ber = qbinom(pnorm(realization0.5$Zs), size=1, prob=1/3)
+realization1.0$Ber = qbinom(pnorm(realization1.0$Zs), size=1, prob=1/3)
+realization1.5$Ber = qbinom(pnorm(realization1.5$Zs), size=1, prob=1/3)
+realization2.5$Ber = qbinom(pnorm(realization2.5$Zs), size=1, prob=1/3)
+
+OneDBer0.5 = ggplot() +
+  geom_point(data=realization0.5, aes(x=s, y=Ber)) +
+  labs(title=bquote("Ber(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(realization0.5$Ber),2)) ~ "Sample variance="*.(round(var(realization0.5$Ber),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBer1.0 = ggplot() +
+  geom_point(data=realization1.0, aes(x=s, y=Ber)) +
+  labs(title=bquote("Ber(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.0$Ber),2)) ~ "Sample variance="*.(round(var(realization1.0$Ber),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBer1.5 = ggplot() +
+  geom_point(data=realization1.5, aes(x=s, y=Ber)) +
+  labs(title=bquote("Ber(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.5$Ber),2)) ~ "Sample variance="*.(round(var(realization1.5$Ber),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBer2.5 = ggplot() +
+  geom_point(data=realization2.5, aes(x=s, y=Ber)) +
+  labs(title=bquote("Ber(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization2.5$Ber),2)) ~ "Sample variance="*.(round(var(realization2.5$Ber),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBer0.5
+OneDBer1.0
+OneDBer1.5
+OneDBer2.5
+ggsave("figures/1D/Bernoulli/1DBer0-5.pdf", OneDBer0.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Bernoulli/1DBer1-0.pdf", OneDBer1.0, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Bernoulli/1DBer1-5.pdf", OneDBer1.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Bernoulli/1DBer2-5.pdf", OneDBer2.5, dpi=600, width=4, height=4 )
+```
+
+```{r}
+realization0.5$Bin = qbinom(pnorm(realization0.5$Zs), size=10, prob=1/3)
+realization1.0$Bin = qbinom(pnorm(realization1.0$Zs), size=10, prob=1/3)
+realization1.5$Bin = qbinom(pnorm(realization1.5$Zs), size=10, prob=1/3)
+realization2.5$Bin = qbinom(pnorm(realization2.5$Zs), size=10, prob=1/3)
+
+OneDBin0.5 = ggplot() +
+  geom_point(data=realization0.5, aes(x=s, y=Bin)) +
+  labs(title=bquote("Bin("*N==10 *"," ~ p==1/3*")"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(realization0.5$Bin),2)) ~ "Sample variance="*.(round(var(realization0.5$Bin),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBin1.0 = ggplot() +
+  geom_point(data=realization1.0, aes(x=s, y=Bin)) +
+  labs(title=bquote("Bin("*N==10 *"," ~ p==1/3*")"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.0$Bin),2)) ~ "Sample variance="*.(round(var(realization1.0$Bin),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBin1.5 = ggplot() +
+  geom_point(data=realization1.5, aes(x=s, y=Bin)) +
+  labs(title=bquote("Bin("*N==10 *"," ~ p==1/3*")"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.5$Bin),2)) ~ "Sample variance="*.(round(var(realization1.5$Bin),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBin2.5 = ggplot() +
+  geom_point(data=realization2.5, aes(x=s, y=Bin)) +
+  labs(title=bquote("Bin("*N==10 *"," ~ p==1/3*")"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization2.5$Bin),2)) ~ "Sample variance="*.(round(var(realization2.5$Bin),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDBin0.5
+OneDBin1.0
+OneDBin1.5
+OneDBin2.5
+
+ggsave("figures/1D/Binomial/1DBin0-5.pdf", OneDBin0.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Binomial/1DBin1-0.pdf", OneDBin1.0, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Binomial/1DBin1-5.pdf", OneDBin1.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Binomial/1DBin2-5.pdf", OneDBin2.5, dpi=600, width=4, height=4 )
+
+```
+
+```{r}
+realization0.5$NB = qnbinom(pnorm(realization0.5$Zs), size=10, prob=1-1/3)
+realization1.0$NB = qnbinom(pnorm(realization1.0$Zs), size=10, prob=1-1/3)
+realization1.5$NB = qnbinom(pnorm(realization1.5$Zs), size=10, prob=1-1/3)
+realization2.5$NB = qnbinom(pnorm(realization2.5$Zs), size=10, prob=1-1/3)
+
+OneDNB0.5 = ggplot() +
+  geom_point(data=realization0.5, aes(x=s, y=NB)) +
+  labs(title=bquote("NB("*N==10 *"," ~ r==1/3*")"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(realization0.5$NB),2)) ~ "Sample variance="*.(round(var(realization0.5$NB),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDNB1.0 = ggplot() +
+  geom_point(data=realization1.0, aes(x=s, y=NB)) +
+  labs(title=bquote("NB("*N==10 *"," ~ r==1/3*")"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.0$NB),2)) ~ "Sample variance="*.(round(var(realization1.0$NB),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDNB1.5 = ggplot() +
+  geom_point(data=realization1.5, aes(x=s, y=NB)) +
+  labs(title=bquote("NB("*N==10 *"," ~ r==1/3*")"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.5$NB),2)) ~ "Sample variance="*.(round(var(realization1.5$NB),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDNB2.5 = ggplot() +
+  geom_point(data=realization2.5, aes(x=s, y=NB)) +
+  labs(title=bquote("NB("*N==10 *"," ~ r==1/3*")"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization2.5$NB),2)) ~ "Sample variance="*.(round(var(realization2.5$NB),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDNB0.5
+OneDNB1.0
+OneDNB1.5
+OneDNB2.5
+
+ggsave("figures/1D/Negative_Binomial/1DNB0-5.pdf", OneDNB0.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Negative_Binomial/1DNB1-0.pdf", OneDNB1.0, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Negative_Binomial/1DNB1-5.pdf", OneDNB1.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Negative_Binomial/1DNB2-5.pdf", OneDNB2.5, dpi=600, width=4, height=4 )
+```
+
+```{r}
+realization0.5$Pois = qpois(pnorm(realization0.5$Zs), lambda=10)
+realization1.0$Pois = qpois(pnorm(realization1.0$Zs), lambda=10)
+realization1.5$Pois = qpois(pnorm(realization1.5$Zs), lambda=10)
+realization2.5$Pois = qpois(pnorm(realization2.5$Zs), lambda=10)
+
+OneDPois0.5 = ggplot() +
+  geom_point(data=realization0.5, aes(x=s, y=Pois)) +
+  labs(title=bquote("Poisson("*lambda==10*")"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(realization0.5$Pois),2)) ~ "Sample variance="*.(round(var(realization0.5$Pois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDPois1.0 = ggplot() +
+  geom_point(data=realization1.0, aes(x=s, y=Pois)) +
+  labs(title=bquote("Poisson("*lambda==10*")"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.0$Pois),2)) ~ "Sample variance="*.(round(var(realization1.0$Pois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDPois1.5 = ggplot() +
+  geom_point(data=realization1.5, aes(x=s, y=Pois)) +
+  labs(title=bquote("Poisson("*lambda==10*")"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.5$Pois),2)) ~ "Sample variance="*.(round(var(realization1.5$Pois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDPois2.5 = ggplot() +
+  geom_point(data=realization2.5, aes(x=s, y=Pois)) +
+  labs(title=bquote("Poisson("*lambda==10*")"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization2.5$Pois),2)) ~ "Sample variance="*.(round(var(realization2.5$Pois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDPois0.5
+OneDPois1.0
+OneDPois1.5
+OneDPois2.5
+
+ggsave("figures/1D/Poisson/1DPois0-5.pdf", OneDPois0.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Poisson/1DPois1-0.pdf", OneDPois1.0, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Poisson/1DPois1-5.pdf", OneDPois1.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Poisson/1DPois2-5.pdf", OneDPois2.5, dpi=600, width=4, height=4 )
+```
+
+
+```{r}
+realization0.5$GPois = QuantileGpois(pnorm(realization0.5$Zs), lambda=0.5, theta=10)
+realization1.0$GPois = QuantileGpois(pnorm(realization1.0$Zs), lambda=0.5, theta=10)
+realization1.5$GPois = QuantileGpois(pnorm(realization1.5$Zs), lambda=0.5, theta=10)
+realization2.5$GPois = QuantileGpois(pnorm(realization2.5$Zs), lambda=0.5, theta=10)
+
+OneDGPois0.5 = ggplot() +
+  geom_point(data=realization0.5, aes(x=s, y=GPois)) +
+  labs(title=bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(realization0.5$GPois),2)) ~ "Sample variance="*.(round(var(realization0.5$GPois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDGPois1.0 = ggplot() +
+  geom_point(data=realization1.0, aes(x=s, y=GPois)) +
+  labs(title=bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.0$GPois),2)) ~ "Sample variance="*.(round(var(realization1.0$GPois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDGPois1.5 = ggplot() +
+  geom_point(data=realization1.5, aes(x=s, y=GPois)) +
+  labs(title=bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization1.5$GPois),2)) ~ "Sample variance="*.(round(var(realization1.5$GPois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDGPois2.5 = ggplot() +
+  geom_point(data=realization2.5, aes(x=s, y=GPois)) +
+  labs(title=bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(realization2.5$GPois),2)) ~ "Sample variance="*.(round(var(realization2.5$GPois),2))),
+       y="Z(s)")+
+  theme_minimal()
+
+OneDGPois0.5
+OneDGPois1.0
+OneDGPois1.5
+OneDGPois2.5
+
+ggsave("figures/1D/Generalized_Poisson/1DGPois0-5.pdf", OneDGPois0.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Generalized_Poisson/1DGPois1-0.pdf", OneDGPois1.0, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Generalized_Poisson/1DGPois1-5.pdf", OneDGPois1.5, dpi=600, width=4, height=4 )
+ggsave("figures/1D/Generalized_Poisson/1DGPois2-5.pdf", OneDGPois2.5, dpi=600, width=4, height=4 )
+```
+
+```{r}
+simu = RFsimulate(OneDmodel1.0, x=s, n=1000)
+lambda=10; eta=0.5
+samples = as.matrix(simu@data)
+position0 = t(samples[1,])
+position0.gpois = QuantileGpois(pnorm(position0), lambda, eta)
+empirical = sort(position0.gpois)
+theoretical = QuantileGpois((1:1000)/1001, lambda, eta)
+quantiles = data.frame(empirical=empirical, theoretical=theoretical)
+
+QQGPois = ggplot() +
+  geom_point(data=quantiles, aes(x=theoretical, y=empirical)) +
+  geom_abline(intercept=0, slope=1, color="red") +
+  labs(x="Theoretical quantiles",
+       y="Empirical quantiles",
+       title="QQ-plot for location s=0",
+       subtitle=bquote(lambda==.(lambda) ~ eta==.(eta) ~ "Matern"*(nu==1.0))) +
+  theme_minimal()
+
+ggsave("figures/QQGpois.pdf", QQGPois, dpi=600, width=4, height=4)
+```
+
+# 2-D case
+
+## Simulated samples
+
+These samples are drawn using a Matern covariance function with smoothness $\nu=0.5,1,1.5,2.5$, range $\phi=1$, and variance $\sigma^2=1$.
+
+```{r simulation}
+RFoptions(seed=20)
+
+# Models with increasing smoothness
+model0.5 = RMwhittle(nu=0.5, var=1, scale=1)
+model1.0 = RMwhittle(nu=1, var=1, scale=1)
+model1.5 = RMwhittle(nu=1.5, var=1, scale=1)
+model2.5 = RMwhittle(nu=2.5, var=1, scale=1)
+
+# Grid of coordinates
+s2D = seq(0,20,length=1000) # 20 seconds for 2000 x 2000
+
+# Simulations
+ptm = proc.time()
+simu2D0.5 = RFsimulate(model0.5, x=s2D, y=s2D)
+simu2D1.0 = RFsimulate(model1.0, x=s2D, y=s2D)
+simu2D1.5 = RFsimulate(model1.5, x=s2D, y=s2D)
+simu2D2.5 = RFsimulate(model2.5, x=s2D, y=s2D)
+proc.time() - ptm
+
+# Grid of coordinates object 
+coords = coordinates(simu2D0.5)
+
+values0.5 = simu2D0.5$variable1
+values1.0 = simu2D1.0$variable1
+values1.5 = simu2D1.5$variable1
+values2.5 = simu2D2.5$variable1
+```
+
+### $\nu=0.5$
+
+```{r 0.5_samples}
+draw0.5 = data.frame(cbind(coords, values0.5))
+names(draw0.5) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+draw0.5$Ber = qbinom(pnorm(draw0.5$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+draw0.5$Bin = qbinom(pnorm(draw0.5$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+draw0.5$NB = qnbinom(pnorm(draw0.5$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+draw0.5$Pois = qpois(pnorm(draw0.5$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=0.5) This function calls the dispersion parameter lambda
+draw0.5$GPois = QuantileGpois(pnorm(draw0.5$Zs), lambda=0.5, theta=10)
+```
+
+```{r 0.5_plots}
+TwoDGauss0.5 = ggplot() +
+  geom_tile(data=draw0.5, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(r)"==0 ~ C(r)=="Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(draw0.5$Zs),2)) ~ "Sample variance="*.(round(var(draw0.5$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+TwoDBer0.5 = ggplot() +
+  geom_tile(data=draw0.5, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(draw0.5$Ber),2)) ~ "Sample variance="*.(round(var(draw0.5$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDBin0.5 = ggplot() +
+  geom_tile(data=draw0.5, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(draw0.5$Bin),2)) ~ "Sample variance="*.(round(var(draw0.5$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDNB0.5 = ggplot() +
+  geom_tile(data=draw0.5, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(draw0.5$NB),2)) ~ "Sample variance="*.(round(var(draw0.5$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDPois0.5 = ggplot() +
+  geom_tile(data=draw0.5, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(draw0.5$Pois),2)) ~ "Sample variance="*.(round(var(draw0.5$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGPois0.5 = ggplot() +
+  geom_tile(data=draw0.5, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(draw0.5$GPois),2)) ~ "Sample variance="*.(round(var(draw0.5$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGauss0.5
+TwoDBer0.5
+TwoDBin0.5
+TwoDNB0.5
+TwoDPois0.5
+TwoDGPois0.5
+
+ggsave("figures/2D/Gaussian/2DGauss0-5.png", TwoDGauss0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Bernoulli/2DBer0-5.png", TwoDBer0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Binomial/2DBin0-5.png", TwoDBin0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Negative_Binomial/2DNB0-5.png", TwoDNB0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Poisson/2DPois0-5.png", TwoDPois0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Generalized_Poisson/2DGPois0-5.png", TwoDGPois0.5, dpi=600, width=4, height=4 )
+
+```
+
+### $\nu=1$
+
+```{r 1.0_samples}
+draw1.0 = data.frame(cbind(coords, values1.0))
+names(draw1.0) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+draw1.0$Ber = qbinom(pnorm(draw1.0$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+draw1.0$Bin = qbinom(pnorm(draw1.0$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+draw1.0$NB = qnbinom(pnorm(draw1.0$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+draw1.0$Pois = qpois(pnorm(draw1.0$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=0.5) This function calls the dispersion parameter lambda
+draw1.0$GPois = QuantileGpois(pnorm(draw1.0$Zs), lambda=0.5, theta=10)
+```
+
+```{r 1.0_plots}
+TwoDGauss1.0 = ggplot() +
+  geom_tile(data=draw1.0, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(draw1.0$Zs),2)) ~ "Sample variance="*.(round(var(draw1.0$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+TwoDBer1.0 = ggplot() +
+  geom_tile(data=draw1.0, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.0$Ber),2)) ~ "Sample variance="*.(round(var(draw1.0$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDBin1.0 = ggplot() +
+  geom_tile(data=draw1.0, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.0$Bin),2)) ~ "Sample variance="*.(round(var(draw1.0$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDNB1.0 = ggplot() +
+  geom_tile(data=draw1.0, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round(mean(draw1.0$NB),2)) ~ "Sample variance="*.(round(var(draw1.0$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDPois1.0 = ggplot() +
+  geom_tile(data=draw1.0, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.0$Pois),2)) ~ "Sample variance="*.(round(var(draw1.0$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGPois1.0 = ggplot() +
+  geom_tile(data=draw1.0, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==1)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.0$GPois),2)) ~ "Sample variance="*.(round(var(draw1.0$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGauss1.0
+TwoDBer1.0
+TwoDBin1.0
+TwoDNB1.0
+TwoDPois1.0
+TwoDGPois1.0
+
+ggsave("figures/2D/Gaussian/2DGauss1-0.png", TwoDGauss1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Bernoulli/2DBer1-0.png", TwoDBer1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Binomial/2DBin1-0.png", TwoDBin1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Negative_Binomial/2DNB1-0.png", TwoDNB1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Poisson/2DPois1-0.png", TwoDPois1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Generalized_Poisson/2DGPois1-0.png", TwoDGPois1.0, dpi=600, width=4, height=4 )
+
+```
+
+### $\nu=1.5$
+
+```{r 1.5_samples}
+draw1.5 = data.frame(cbind(coords, values1.5))
+names(draw1.5) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+draw1.5$Ber = qbinom(pnorm(draw1.5$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+draw1.5$Bin = qbinom(pnorm(draw1.5$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+draw1.5$NB = qnbinom(pnorm(draw1.5$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+draw1.5$Pois = qpois(pnorm(draw1.5$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=0.5) This function calls the dispersion parameter lambda
+draw1.5$GPois = QuantileGpois(pnorm(draw1.5$Zs), lambda=0.5, theta=10)
+```
+
+```{r 1.5_plots}
+TwoDGauss1.5 = ggplot() +
+  geom_tile(data=draw1.5, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(draw1.5$Zs),2)) ~ "Sample variance="*.(round(var(draw1.5$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+TwoDBer1.5 = ggplot() +
+  geom_tile(data=draw1.5, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.5$Ber),2)) ~ "Sample variance="*.(round(var(draw1.5$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDBin1.5 = ggplot() +
+  geom_tile(data=draw1.5, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.5$Bin),2)) ~ "Sample variance="*.(round(var(draw1.5$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDNB1.5 = ggplot() +
+  geom_tile(data=draw1.5, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round(mean(draw1.5$NB),2)) ~ "Sample variance="*.(round(var(draw1.5$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDPois1.5 = ggplot() +
+  geom_tile(data=draw1.5, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.5$Pois),2)) ~ "Sample variance="*.(round(var(draw1.5$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGPois1.5 = ggplot() +
+  geom_tile(data=draw1.5, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==1.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw1.5$GPois),2)) ~ "Sample variance="*.(round(var(draw1.5$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGauss1.5
+TwoDBer1.5
+TwoDBin1.5
+TwoDNB1.5
+TwoDPois1.5
+TwoDGPois1.5
+
+ggsave("figures/2D/Gaussian/2DGauss1-5.png", TwoDGauss1.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Bernoulli/2DBer1-5.png", TwoDBer1.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Binomial/2DBin1-5.png", TwoDBin1.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Negative_Binomial/2DNB1-5.png", TwoDNB1.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Poisson/2DPois1-5.png", TwoDPois1.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Generalized_Poisson/2DGPois1-5.png", TwoDGPois1.5, dpi=600, width=4, height=4 )
+
+```
+
+### $\nu=2.5$
+
+```{r 2.5_samples}
+draw2.5 = data.frame(cbind(coords, values2.5))
+names(draw2.5) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+draw2.5$Ber = qbinom(pnorm(draw2.5$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+draw2.5$Bin = qbinom(pnorm(draw2.5$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+draw2.5$NB = qnbinom(pnorm(draw2.5$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+draw2.5$Pois = qpois(pnorm(draw2.5$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=0.5) This function calls the dispersion parameter lambda
+draw2.5$GPois = QuantileGpois(pnorm(draw2.5$Zs), lambda=0.5, theta=10)
+```
+
+```{r 2.5_plots}
+TwoDGauss2.5 = ggplot() +
+  geom_tile(data=draw2.5, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(draw2.5$Zs),2)) ~ "Sample variance="*.(round(var(draw2.5$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+TwoDBer2.5 = ggplot() +
+  geom_tile(data=draw2.5, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw2.5$Ber),2)) ~ "Sample variance="*.(round(var(draw2.5$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDBin2.5 = ggplot() +
+  geom_tile(data=draw2.5, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw2.5$Bin),2)) ~ "Sample variance="*.(round(var(draw2.5$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+TwoDNB2.5 = ggplot() +
+  geom_tile(data=draw2.5, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round(mean(draw2.5$NB),2)) ~ "Sample variance="*.(round(var(draw2.5$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDPois2.5 = ggplot() +
+  geom_tile(data=draw2.5, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw2.5$Pois),2)) ~ "Sample variance="*.(round(var(draw2.5$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGPois2.5 = ggplot() +
+  geom_tile(data=draw2.5, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Matern"*(nu==2.5)),
+       caption=bquote("Sample mean="*.(round( mean(draw2.5$GPois),2)) ~ "Sample variance="*.(round(var(draw2.5$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+TwoDGauss2.5
+TwoDBer2.5
+TwoDBin2.5
+TwoDNB2.5
+TwoDPois2.5
+TwoDGPois2.5
+
+ggsave("figures/2D/Gaussian/2DGauss2-5.png", TwoDGauss2.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Bernoulli/2DBer2-5.png", TwoDBer2.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Binomial/2DBin2-5.png", TwoDBin2.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Negative_Binomial/2DNB2-5.png", TwoDNB2.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Poisson/2DPois2-5.png", TwoDPois2.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D/Generalized_Poisson/2DGPois2-5.png", TwoDGPois2.5, dpi=600, width=4, height=4 )
+
+```
+
+# Wave
+
+## Samples
+
+```{r}
+RFoptions(seed=20)
+wave.model0.25 = RMwave(var=1, scale=1/4)
+wave.model0.5 = RMwave(var=1, scale=1/2)
+wave.model0.75 = RMwave(var=1, scale=3/4)
+wave.model1.0 = RMwave(var=1, scale=1)
+
+s2D = seq(0,20,length=1000) # 20 seconds for 2000 x 2000
+ptm = proc.time()
+simu2D.wave0.25 = RFsimulate(wave.model0.25, x=s2D, y=s2D)
+simu2D.wave0.5 = RFsimulate(wave.model0.5, x=s2D, y=s2D)
+simu2D.wave0.75 = RFsimulate(wave.model0.75, x=s2D, y=s2D)
+simu2D.wave1.0 = RFsimulate(wave.model1.0, x=s2D, y=s2D)
+proc.time() - ptm
+
+wave.coords = coordinates(simu2D.wave0.25)
+
+wave.values0.25 = simu2D.wave0.25$variable1
+wave.values0.5 = simu2D.wave0.5$variable1
+wave.values0.75 = simu2D.wave0.75$variable1
+wave.values1.0 = simu2D.wave1.0$variable1
+```
+
+### $\phi=0.25$
+
+```{r wave_0.25_samples}
+wave.draw0.25 = data.frame(cbind(wave.coords, wave.values0.25))
+names(wave.draw0.25) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+wave.draw0.25$Ber = qbinom(pnorm(wave.draw0.25$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+wave.draw0.25$Bin = qbinom(pnorm(wave.draw0.25$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+wave.draw0.25$NB = qnbinom(pnorm(wave.draw0.25$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+wave.draw0.25$Pois = qpois(pnorm(wave.draw0.25$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=0.25) This function calls the dispersion parameter lambda
+wave.draw0.25$GPois = QuantileGpois(pnorm(wave.draw0.25$Zs), lambda=0.5, theta=10)
+```
+
+```{r wave_0.25_plots}
+wave.TwoDGauss0.25 = ggplot() +
+  geom_tile(data=wave.draw0.25, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Wave"*(phi==1/4)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw0.25$Zs),2)) ~ "Sample variance="*.(round(var(wave.draw0.25$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+wave.TwoDBer0.25 = ggplot() +
+  geom_tile(data=wave.draw0.25, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.25$Ber),2)) ~ "Sample variance="*.(round(var(wave.draw0.25$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDBin0.25 = ggplot() +
+  geom_tile(data=wave.draw0.25, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.25$Bin),2)) ~ "Sample variance="*.(round(var(wave.draw0.25$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDNB0.25 = ggplot() +
+  geom_tile(data=wave.draw0.25, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1/4)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw0.25$NB),2)) ~ "Sample variance="*.(round(var(wave.draw0.25$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDPois0.25 = ggplot() +
+  geom_tile(data=wave.draw0.25, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Wave"*(phi==1/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.25$Pois),2)) ~ "Sample variance="*.(round(var(wave.draw0.25$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGPois0.25 = ggplot() +
+  geom_tile(data=wave.draw0.25, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Wave"*(phi==1/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.25$GPois),2)) ~ "Sample variance="*.(round(var(wave.draw0.25$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGauss0.25
+wave.TwoDBer0.25
+wave.TwoDBin0.25
+wave.TwoDNB0.25
+wave.TwoDPois0.25
+wave.TwoDGPois0.25
+
+ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss0-25.png", wave.TwoDGauss0.25, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Bernoulli/2D_wave_Ber0-25.png", wave.TwoDBer0.25, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Binomial/2D_wave_Bin0-25.png", wave.TwoDBin0.25, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Negative_Binomial/2D_wave_NB0-25.png", wave.TwoDNB0.25, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Poisson/2D_wave_Pois0-25.png", wave.TwoDPois0.25, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Generalized_Poisson/2D_wave_GPois0-25.png", wave.TwoDGPois0.25, dpi=600, width=4, height=4 )
+
+```
+
+### $\phi=0.5$
+
+```{r wave_0.5_samples}
+wave.draw0.5 = data.frame(cbind(wave.coords, wave.values0.5))
+names(wave.draw0.5) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+wave.draw0.5$Ber = qbinom(pnorm(wave.draw0.5$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+wave.draw0.5$Bin = qbinom(pnorm(wave.draw0.5$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+wave.draw0.5$NB = qnbinom(pnorm(wave.draw0.5$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+wave.draw0.5$Pois = qpois(pnorm(wave.draw0.5$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=0.5) This function calls the dispersion parameter lambda
+wave.draw0.5$GPois = QuantileGpois(pnorm(wave.draw0.5$Zs), lambda=0.5, theta=10)
+```
+
+```{r wave_0.5_plots}
+wave.TwoDGauss0.5 = ggplot() +
+  geom_tile(data=wave.draw0.5, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Wave"*(phi==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw0.5$Zs),2)) ~ "Sample variance="*.(round(var(wave.draw0.5$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+wave.TwoDBer0.5 = ggplot() +
+  geom_tile(data=wave.draw0.5, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.5$Ber),2)) ~ "Sample variance="*.(round(var(wave.draw0.5$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDBin0.5 = ggplot() +
+  geom_tile(data=wave.draw0.5, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.5$Bin),2)) ~ "Sample variance="*.(round(var(wave.draw0.5$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDNB0.5 = ggplot() +
+  geom_tile(data=wave.draw0.5, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1/2)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw0.5$NB),2)) ~ "Sample variance="*.(round(var(wave.draw0.5$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDPois0.5 = ggplot() +
+  geom_tile(data=wave.draw0.5, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Wave"*(phi==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.5$Pois),2)) ~ "Sample variance="*.(round(var(wave.draw0.5$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGPois0.5 = ggplot() +
+  geom_tile(data=wave.draw0.5, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Wave"*(phi==1/2)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.5$GPois),2)) ~ "Sample variance="*.(round(var(wave.draw0.5$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGauss0.5
+wave.TwoDBer0.5
+wave.TwoDBin0.5
+wave.TwoDNB0.5
+wave.TwoDPois0.5
+wave.TwoDGPois0.5
+
+
+ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss0-5.png", wave.TwoDGauss0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Bernoulli/2D_wave_Ber0-5.png", wave.TwoDBer0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Binomial/2D_wave_Bin0-5.png", wave.TwoDBin0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Negative_Binomial/2D_wave_NB0-5.png", wave.TwoDNB0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Poisson/2D_wave_Pois0-5.png", wave.TwoDPois0.5, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Generalized_Poisson/2D_wave_GPois0-5.png", wave.TwoDGPois0.5, dpi=600, width=4, height=4 )
+```
+### $\phi=0.75$
+
+```{r wave_0.75_samples}
+wave.draw0.75 = data.frame(cbind(wave.coords, wave.values0.75))
+names(wave.draw0.75) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+wave.draw0.75$Ber = qbinom(pnorm(wave.draw0.75$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+wave.draw0.75$Bin = qbinom(pnorm(wave.draw0.75$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+wave.draw0.75$NB = qnbinom(pnorm(wave.draw0.75$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+wave.draw0.75$Pois = qpois(pnorm(wave.draw0.75$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=0.75) This function calls the dispersion parameter lambda
+wave.draw0.75$GPois = QuantileGpois(pnorm(wave.draw0.75$Zs), lambda=0.5, theta=10)
+```
+
+```{r wave_0.75_plots}
+wave.TwoDGauss0.75 = ggplot() +
+  geom_tile(data=wave.draw0.75, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Wave"*(phi==3/4)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw0.75$Zs),2)) ~ "Sample variance="*.(round(var(wave.draw0.75$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+wave.TwoDBer0.75 = ggplot() +
+  geom_tile(data=wave.draw0.75, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Wave"*(phi==3/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.75$Ber),2)) ~ "Sample variance="*.(round(var(wave.draw0.75$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDBin0.75 = ggplot() +
+  geom_tile(data=wave.draw0.75, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==3/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.75$Bin),2)) ~ "Sample variance="*.(round(var(wave.draw0.75$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDNB0.75 = ggplot() +
+  geom_tile(data=wave.draw0.75, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==3/4)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw0.75$NB),2)) ~ "Sample variance="*.(round(var(wave.draw0.75$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDPois0.75 = ggplot() +
+  geom_tile(data=wave.draw0.75, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Wave"*(phi==3/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.75$Pois),2)) ~ "Sample variance="*.(round(var(wave.draw0.75$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGPois0.75 = ggplot() +
+  geom_tile(data=wave.draw0.75, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Wave"*(phi==3/4)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw0.75$GPois),2)) ~ "Sample variance="*.(round(var(wave.draw0.75$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGauss0.75
+wave.TwoDBer0.75
+wave.TwoDBin0.75
+wave.TwoDNB0.75
+wave.TwoDPois0.75
+wave.TwoDGPois0.75
+
+ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss0-75.png", wave.TwoDGauss0.75, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Bernoulli/2D_wave_Ber0-75.png", wave.TwoDBer0.75, dpi=600, width=4, height=4 )
+ggsave("figures/2D_waveBinomial2D_wave_Bin0-75.png", wave.TwoDBin0.75, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Negative_Binomial/2D_wave_NB0-75.png", wave.TwoDNB0.75, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Poisson/2D_wave_Pois0-75.png", wave.TwoDPois0.75, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Generalized_Poisson/2D_wave_GPois0-75.png", wave.TwoDGPois0.75, dpi=600, width=4, height=4 )
+
+```
+
+### $\phi=1.0$
+
+```{r wave_1.0_samples}
+wave.draw1.0 = data.frame(cbind(wave.coords, wave.values1.0))
+names(wave.draw1.0) = c("si1", "si2", "Zs")
+
+# Ber(p=1/3)
+wave.draw1.0$Ber = qbinom(pnorm(wave.draw1.0$Zs), size=1, prob=1/3)
+
+# Bin(N=10, p=1/3)
+wave.draw1.0$Bin = qbinom(pnorm(wave.draw1.0$Zs), size=10, prob=1/3)
+
+# NB(r=10, p=1/3) p = prob of success. # of failures before r successes
+wave.draw1.0$NB = qnbinom(pnorm(wave.draw1.0$Zs), size=10, prob=1-1/3)
+
+# Pois(lambda=10)
+wave.draw1.0$Pois = qpois(pnorm(wave.draw1.0$Zs), lambda=10)
+
+# Gpois(lambda=10, eta=1.0) This function calls the dispersion parameter lambda
+wave.draw1.0$GPois = QuantileGpois(pnorm(wave.draw1.0$Zs), lambda=0.5, theta=10)
+```
+
+```{r wave_1.0_plots}
+wave.TwoDGauss1.0 = ggplot() +
+  geom_tile(data=wave.draw1.0, aes(x=si1, y=si2, fill=Zs)) +
+  labs(title = "Gaussian(0,1)",
+       subtitle=bquote("m(s)"==0 ~ C(r)=="Wave"*(phi==1/3)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw1.0$Zs),2)) ~ "Sample variance="*.(round(var(wave.draw1.0$Zs),2)))) +
+  scale_fill_viridis(option="magma", name="Z(s)") +
+  theme_minimal()
+
+wave.TwoDBer1.0 = ggplot() +
+  geom_tile(data=wave.draw1.0, aes(x=si1, y=si2, fill=as.factor(Ber))) +
+  labs(title = bquote("Bernoulli(p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw1.0$Ber),2)) ~ "Sample variance="*.(round(var(wave.draw1.0$Ber),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDBin1.0 = ggplot() +
+  geom_tile(data=wave.draw1.0, aes(x=si1, y=si2, fill=as.factor(Bin))) +
+  labs(title = bquote("Binomial(n=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw1.0$Bin),2)) ~ "Sample variance="*.(round(var(wave.draw1.0$Bin),2)))) +
+  scale_fill_viridis(option="magma", name="Counts", discrete = T, guide=guide_legend(reverse=TRUE)) +
+  theme_minimal()
+
+wave.TwoDNB1.0 = ggplot() +
+  geom_tile(data=wave.draw1.0, aes(x=si1, y=si2, fill=NB)) +
+  labs(title = bquote("Neg. Binomial(r=10, p=1/3)"),
+       subtitle=bquote("Wave"*(phi==1)),
+       caption=bquote("Sample mean="*.(round(mean(wave.draw1.0$NB),2)) ~ "Sample variance="*.(round(var(wave.draw1.0$NB),2)))) +
+  scale_fill_viridis(option="magma", name="Count)") +
+  theme_minimal()
+
+wave.TwoDPois1.0 = ggplot() +
+  geom_tile(data=wave.draw1.0, aes(x=si1, y=si2, fill=Pois)) +
+  labs(title = bquote("Poisson"*(lambda==10)),
+       subtitle=bquote("Wave"*(phi==1)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw1.0$Pois),2)) ~ "Sample variance="*.(round(var(wave.draw1.0$Pois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGPois1.0 = ggplot() +
+  geom_tile(data=wave.draw1.0, aes(x=si1, y=si2, fill=GPois)) +
+  labs(title = bquote("G. Poisson("*lambda==10 *"," ~ eta==1/2*")"),
+       subtitle=bquote("Wave"*(phi==1)),
+       caption=bquote("Sample mean="*.(round( mean(wave.draw1.0$GPois),2)) ~ "Sample variance="*.(round(var(wave.draw1.0$GPois),2)))) +
+  scale_fill_viridis(option="magma", name="Counts") +
+  theme_minimal()
+
+wave.TwoDGauss1.0
+wave.TwoDBer1.0
+wave.TwoDBin1.0
+wave.TwoDNB1.0
+wave.TwoDPois1.0
+wave.TwoDGPois1.0
+
+ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss1-0.png", wave.TwoDGauss1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Bernoulli/2D_wave_Ber1-0.png", wave.TwoDBer1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Binomial/2D_wave_Bin1-0.png", wave.TwoDBin1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Negative_Binomial/2D_wave_NB1-0.png", wave.TwoDNB1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Poisson/2D_wave_Pois1-0.png", wave.TwoDPois1.0, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Generalized_Poisson/2D_wave_GPois1-0.png", wave.TwoDGPois1.0, dpi=600, width=4, height=4 )
+
+```
