@@ -843,12 +843,12 @@ wave.TwoDGPois0.25 = ggplot() +
   scale_fill_viridis(option="magma", name="Counts") +
   theme_minimal()
 
-wave.TwoDGauss0.25
-wave.TwoDBer0.25
-wave.TwoDBin0.25
-wave.TwoDNB0.25
-wave.TwoDPois0.25
-wave.TwoDGPois0.25
+# wave.TwoDGauss0.25
+# wave.TwoDBer0.25
+# wave.TwoDBin0.25
+# wave.TwoDNB0.25
+# wave.TwoDPois0.25
+# wave.TwoDGPois0.25
 
 ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss0-25.png", wave.TwoDGauss0.25, dpi=600, width=4, height=4 )
 ggsave("figures/2D_wave/Bernoulli/2D_wave_Ber0-25.png", wave.TwoDBer0.25, dpi=600, width=4, height=4 )
@@ -930,12 +930,12 @@ wave.TwoDGPois0.5 = ggplot() +
   scale_fill_viridis(option="magma", name="Counts") +
   theme_minimal()
 
-wave.TwoDGauss0.5
-wave.TwoDBer0.5
-wave.TwoDBin0.5
-wave.TwoDNB0.5
-wave.TwoDPois0.5
-wave.TwoDGPois0.5
+# wave.TwoDGauss0.5
+# wave.TwoDBer0.5
+# wave.TwoDBin0.5
+# wave.TwoDNB0.5
+# wave.TwoDPois0.5
+# wave.TwoDGPois0.5
 
 
 ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss0-5.png", wave.TwoDGauss0.5, dpi=600, width=4, height=4 )
@@ -1016,16 +1016,16 @@ wave.TwoDGPois0.75 = ggplot() +
   scale_fill_viridis(option="magma", name="Counts") +
   theme_minimal()
 
-wave.TwoDGauss0.75
-wave.TwoDBer0.75
-wave.TwoDBin0.75
-wave.TwoDNB0.75
-wave.TwoDPois0.75
-wave.TwoDGPois0.75
+# wave.TwoDGauss0.75
+# wave.TwoDBer0.75
+# wave.TwoDBin0.75
+# wave.TwoDNB0.75
+# wave.TwoDPois0.75
+# wave.TwoDGPois0.75
 
 ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss0-75.png", wave.TwoDGauss0.75, dpi=600, width=4, height=4 )
 ggsave("figures/2D_wave/Bernoulli/2D_wave_Ber0-75.png", wave.TwoDBer0.75, dpi=600, width=4, height=4 )
-ggsave("figures/2D_waveBinomial2D_wave_Bin0-75.png", wave.TwoDBin0.75, dpi=600, width=4, height=4 )
+ggsave("figures/2D_wave/Binomial/2D_wave_Bin0-75.png", wave.TwoDBin0.75, dpi=600, width=4, height=4 )
 ggsave("figures/2D_wave/Negative_Binomial/2D_wave_NB0-75.png", wave.TwoDNB0.75, dpi=600, width=4, height=4 )
 ggsave("figures/2D_wave/Poisson/2D_wave_Pois0-75.png", wave.TwoDPois0.75, dpi=600, width=4, height=4 )
 ggsave("figures/2D_wave/Generalized_Poisson/2D_wave_GPois0-75.png", wave.TwoDGPois0.75, dpi=600, width=4, height=4 )
@@ -1103,12 +1103,12 @@ wave.TwoDGPois1.0 = ggplot() +
   scale_fill_viridis(option="magma", name="Counts") +
   theme_minimal()
 
-wave.TwoDGauss1.0
-wave.TwoDBer1.0
-wave.TwoDBin1.0
-wave.TwoDNB1.0
-wave.TwoDPois1.0
-wave.TwoDGPois1.0
+# wave.TwoDGauss1.0
+# wave.TwoDBer1.0
+# wave.TwoDBin1.0
+# wave.TwoDNB1.0
+# wave.TwoDPois1.0
+# wave.TwoDGPois1.0
 
 ggsave("figures/2D_wave/Gaussian/2D_wave_Gauss1-0.png", wave.TwoDGauss1.0, dpi=600, width=4, height=4 )
 ggsave("figures/2D_wave/Bernoulli/2D_wave_Ber1-0.png", wave.TwoDBer1.0, dpi=600, width=4, height=4 )
